@@ -222,8 +222,11 @@ function bindCards() {
         el.querySelector('.r').classList.toggle('on', nd === 'retenu');
         el.querySelector('.e').classList.toggle('on', nd === 'ecarte');
         $('#nTri').textContent = ARTS.filter(x => x.ai_relevant && !x.decision && inDays(x, 7)).length;
-        if (filt === 'a_trier' && nd) { el.style.transition = 'opacity .3s'; el.style.opacity = 0; setTimeout(renderTri, 300); }
-        else toast(nd ? (nd === 'retenu' ? 'Retenu' : 'Écarté') : 'Décision annulée');
+        // La carte ne correspond plus au filtre affiché (ex. « Écarté » dans Retenus) → elle quitte la liste
+        const stillFits = filt === 'a_trier' ? !nd : filt === 'autres' ? !nd : nd === filt;
+        toast(nd ? (nd === 'retenu' ? 'Retenu' : 'Écarté') : 'Décision annulée');
+        if (!stillFits) { el.style.transition = 'opacity .3s'; el.style.opacity = 0; setTimeout(renderTri, 300); }
+        else renderTri();
       } catch (e) { toast('Erreur : ' + e.message); }
     };
     el.querySelector('.r').onclick = () => decide('retenu');
