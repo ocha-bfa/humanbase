@@ -282,10 +282,12 @@ function renderSem() {
   $('#main').innerHTML = `<div class="tools">
       <select id="wk">${weeks.map(w => `<option value="${w}" ${w === week ? 'selected' : ''}>Semaine ${esc(weekLabel(w))}</option>`).join('')}</select>
       <span class="sp"></span>
+      <button class="btn" id="xDocx" ${n ? '' : 'disabled'} title="Télécharger le résumé de la semaine en document Word">⬇ Word</button>
+      <button class="btn" id="xCsv" ${n ? '' : 'disabled'} title="Télécharger la liste des articles retenus (ouvre dans Excel)">⬇ CSV</button>
       <button class="btn pri" id="copy" ${n ? '' : 'disabled'}>Copier pour Outlook</button>
     </div>
     ${pending ? `<p class="help" style="margin:-4px 0 12px">${pending} article(s) de cette semaine restent à trier dans « Articles à trier ».</p>` : ''}
-    ${n ? `<div class="doc" id="doc">${doc}</div><p class="help">${n} article(s) retenu(s). Cliquez sur un résumé pour le modifier ; flèches ↑ ↓ pour changer l'ordre dans une rubrique. « Copier pour Outlook » copie le texte avec les liens et la mise en forme : collez-le directement dans un e-mail.</p>`
+    ${n ? `<div class="doc" id="doc">${doc}</div><p class="help">${n} article(s) retenu(s). Cliquez sur un résumé pour le modifier ; flèches ↑ ↓ pour changer l'ordre dans une rubrique. « Copier pour Outlook » copie le texte avec les liens et la mise en forme : collez-le directement dans un e-mail. « ⬇ Word » télécharge le même résumé en document Word ; « ⬇ CSV » la liste des articles retenus, à ouvrir dans Excel.</p>`
         : '<div class="empty">Aucun article retenu pour cette semaine. Marquez des articles « Retenu » dans « Articles à trier ».</div>'}`;
   $('#wk').onchange = e => { week = e.target.value; renderSem(); };
   // Flèches ↑ ↓ : échanger avec le voisin puis enregistrer l'ordre de toute la rubrique
@@ -312,6 +314,16 @@ function renderSem() {
       catch (er) { toast('Erreur : ' + er.message); }
     };
   });
+  // Exports : même contenu et même ordre que le résumé affiché
+  const ORDERED = SECTIONS.filter(([c]) => GROUPS[c]).map(([c, l]) => [c, l, GROUPS[c]]);
+  const xd = $('#xDocx'), xc = $('#xCsv');
+  if (xd && n) xd.onclick = async () => {
+    xd.disabled = true; const t0 = xd.textContent; xd.textContent = 'Préparation…';
+    try { await exportDocx(week, ORDERED); AUTH.log && AUTH.log('media_week_docx', week); }
+    catch (e) { toast('Erreur Word : ' + e.message); }
+    xd.disabled = false; xd.textContent = t0;
+  };
+  if (xc && n) xc.onclick = () => { exportCsv(week, ORDERED); AUTH.log && AUTH.log('media_week_csv', week); };
   const c = $('#copy');
   if (c) c.onclick = async () => {
     const node = $('#doc').cloneNode(true);
@@ -328,6 +340,65 @@ function renderSem() {
     }
     AUTH.log && AUTH.log('media_week_copy', week);
   };
+}
+
+// ---------- Exports Word / CSV ----------
+function download(blob, name) {
+  const u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 4000);
+}
+const fileDate = ws => 'Monitoring_medias_OCHA_BFA_semaine_' + ws;
+let _docxLib = null;
+function loadDocx() {
+  if (window.docx) return Promise.resolve(window.docx);
+  return _docxLib ||= new Promise((ok, ko) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js';
+    s.onload = () => window.docx ? ok(window.docx) : ko(new Error('bibliothèque Word non chargée'));
+    s.onerror = () => { _docxLib = null; ko(new Error('bibliothèque Word inaccessible (connexion ?)')); };
+    document.head.appendChild(s);
+  });
+}
+async function exportDocx(ws, groups) {
+  const D = await loadDocx();
+  const { Document, Packer, Paragraph, TextRun, ExternalHyperlink } = D;
+  const F = 'Calibri', SZ = 22;            // 11 pt
+  const run = (text, o = {}) => new TextRun({ text, font: F, size: SZ, ...o });
+  const link = (text, url, o = {}) => new ExternalHyperlink({ link: url, children: [run(text, { style: 'Hyperlink', color: '0563C1', underline: {}, ...o })] });
+  const kids = [
+    new Paragraph({ spacing: { after: 120 }, children: [run('MONITORING DES MÉDIAS', { bold: true, size: 28, color: '026CB6' })] }),
+    new Paragraph({ spacing: { after: 240 }, children: [run('OCHA Burkina Faso — semaine ' + weekLabel(ws), { color: '555555' })] }),
+  ];
+  for (const [, label, items] of groups) {
+    kids.push(new Paragraph({ spacing: { before: 280, after: 120 }, children: [run(label, { bold: true, underline: {} })] }));
+    for (const a of items) {
+      kids.push(new Paragraph({ spacing: { after: 0 }, children: [link(a.title || '(sans titre)', a.url, { bold: true }), run(' – ' + (a.outlet || ''))] }));
+      kids.push(new Paragraph({ spacing: { after: 0 }, children: [run(fdate(a.published_at), { color: '555555' })] }));
+      if (a.summary) kids.push(new Paragraph({ spacing: { after: 0 }, children: String(a.summary).split(/\r?\n/).map((l, i) => run(l, i ? { break: 1 } : {})) }));
+      const o = a.other_links || [];
+      if (o.length) {
+        const ch = [run('Autre lien : ')];
+        o.forEach((x, i) => { if (i) ch.push(run(' ; ')); ch.push(link(x.outlet || x.url, x.url)); });
+        kids.push(new Paragraph({ spacing: { after: 0 }, children: ch }));
+      }
+      kids.push(new Paragraph({ spacing: { after: 160 }, children: [] }));
+    }
+  }
+  const doc = new Document({ creator: 'OCHA Burkina Faso', title: 'Monitoring des médias — semaine ' + weekLabel(ws),
+    styles: { default: { document: { run: { font: F, size: SZ } } } }, sections: [{ children: kids }] });
+  download(await Packer.toBlob(doc), fileDate(ws) + '.docx');
+  toast('Document Word téléchargé');
+}
+function exportCsv(ws, groups) {
+  const cell = v => { const s = String(v ?? '').replace(/\r?\n/g, ' '); return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const rows = [['Semaine', 'Rubrique', 'Ordre', 'Titre', 'Média', 'Date de publication', 'Résumé', 'Lien', 'Autres liens', 'Retenu par', 'Langue']];
+  for (const [code, label, items] of groups) items.forEach((a, i) => rows.push([
+    weekLabel(ws), label.split(' / ')[0], i + 1, a.title, a.outlet, (a.published_at || '').slice(0, 10), a.summary, a.url,
+    (a.other_links || []).map(x => x.url).join(' | '), (a.decided_by || '').replace(/ \(en lot\)$/, ''), a.lang]));
+  // Point-virgule + BOM UTF-8 : s'ouvre correctement dans Excel en français (accents compris)
+  download(new Blob(['﻿' + rows.map(r => r.map(cell).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' }), fileDate(ws) + '.csv');
+  toast('Fichier CSV téléchargé');
 }
 
 // ---------- Sources ----------
