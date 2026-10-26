@@ -30,7 +30,9 @@ select,input,textarea{font:inherit;color:inherit;border:1px solid var(--line);bo
 .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;cursor:pointer;font:inherit;font-weight:500}
 .btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
 .btn:disabled{opacity:.5;cursor:default}
-h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);margin:22px 0 8px;font-weight:700}
+h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);margin:30px 0 10px;font-weight:700;background:var(--blue-50);border-left:4px solid var(--blue);border-radius:4px;padding:9px 12px}
+h2.sec.star{color:var(--no);background:var(--no-50);border-left-color:var(--no)}
+h2.sec .n{float:right;font-size:12px;letter-spacing:0;background:#fff;border-radius:10px;padding:1px 9px;font-weight:600}
 .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:6px 16px}
 .card.retenu{border-left:4px solid var(--ok)}
 .card.ecarte{border-left:4px solid var(--no);opacity:.65}
@@ -154,13 +156,13 @@ function renderTri() {
   // « À ne pas manquer » : les 10 histoires jugées les plus importantes, en tête de liste
   if (filt === 'a_trier' && !secF && list.length > 12) {
     const top = [...list].sort(byScore).slice(0, 10), ids = new Set(top.map(a => a.id));
-    html += `<h2 class="sec" style="color:#B3261E">★ À ne pas manquer · ${top.length}</h2><p class="help" style="margin:-4px 0 10px">Les 10 articles jugés les plus importants. Pressé ? Traitez ceux-ci puis « Écarter le reste ».</p>` + top.map(card).join('');
+    html += `<h2 class="sec star">★ À ne pas manquer <span class="n">${top.length}</span></h2><p class="help" style="margin:-4px 0 10px">Les 10 articles jugés les plus importants. Pressé ? Traitez ceux-ci puis « Écarter le reste ».</p>` + top.map(card).join('');
     rest = list.filter(a => !ids.has(a.id));
   }
   for (const [code, label] of SECTIONS) {
     const g = rest.filter(a => (a.section || 'NAT') === code).sort(byScore);
     if (!g.length) continue;
-    html += `<h2 class="sec">${esc(label)} · ${g.length}</h2>` + g.map(card).join('');
+    html += `<h2 class="sec">${esc(label)} <span class="n">${g.length} article${g.length > 1 ? 's' : ''}</span></h2>` + g.map(card).join('');
   }
   if (filt === 'a_trier' && list.length) html += `<div style="margin:22px 0;text-align:center"><button class="btn" id="bulk">✕ Écarter le reste (${list.length} article${list.length > 1 ? 's' : ''} non triés${secF ? ' de cette rubrique' : ''})</button>
     <p class="help">Tout ce qui n'a pas été marqué « Retenu » dans cette liste passe en « Écartés ». Vous pourrez toujours le repêcher dans l'onglet « Écartés ».</p></div>`;
