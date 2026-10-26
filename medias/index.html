@@ -332,7 +332,7 @@ async function renderSrc() {
       <label>Type<select id="sKind"><option value="google_news">Mots-clés (Google Actualités)</option><option value="rss">Flux RSS (adresse)</option></select></label>
       <label id="lQ">Mots-clés<input id="sQ" placeholder='ex. "Burkina" Djibo  ou  site:omegabf.info'></label>
       <label>Langue<select id="sLang"><option value="fr">Français</option><option value="en">Anglais</option></select></label>
-      <label>Rubrique par défaut<select id="sSec">${SECTIONS.map(([c, l]) => `<option value="${c}">${esc(l.split(' / ')[0])}</option>`).join('')}</select></label>
+      <label>Rubrique par défaut<select id="sSec"><option value="">Selon l'article</option>${SECTIONS.map(([c, l]) => `<option value="${c}">${esc(l.split(' / ')[0])}</option>`).join('')}</select></label>
     </div>
     <div style="margin-top:12px"><button class="btn pri" id="sAdd">Ajouter</button></div>
     <p class="help">Mots-clés : tous les articles récents de Google Actualités qui correspondent (« site:exemple.bf » pour suivre un seul journal). Flux RSS : l'adresse du flux du site (souvent <i>…/feed</i> ou <i>…/rss</i>). La nouvelle source est lue à la prochaine heure pleine.</p>
@@ -345,7 +345,7 @@ async function renderSrc() {
     const name = $('#sName').value.trim(), q = $('#sQ').value.trim(), k = kind.value;
     if (!name || !q) return toast('Indiquez un nom et ' + (k === 'rss' ? "l'adresse du flux" : 'des mots-clés'));
     if (k === 'rss' && !/^https?:\/\//.test(q)) return toast("L'adresse doit commencer par https://");
-    const body = { name, kind: k, lang: $('#sLang').value, default_section: $('#sSec').value, active: true, added_by: AUTH.email };
+    const body = { name, kind: k, lang: $('#sLang').value, default_section: $('#sSec').value || null, active: true, added_by: AUTH.email };
     if (k === 'rss') body.url = q; else body.query = q;
     try { await api('media_sources', { method: 'POST', body: JSON.stringify(body), headers: { Prefer: 'return=minimal' } }); toast('Source ajoutée'); renderSrc(); }
     catch (e) { toast('Erreur : ' + e.message); }
