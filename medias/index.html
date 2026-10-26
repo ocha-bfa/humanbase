@@ -119,7 +119,9 @@ async function loadArticles() {
   ARTS = await api('v_media_articles?select=*&published_at=gte.' + since + '&order=published_at.desc&limit=2000');
   $('#nTri').textContent = ARTS.filter(a => a.ai_relevant && !a.decision && inDays(a, 7)).length;
 }
-const inDays = (a, n) => new Date(a.published_at) > Date.now() - n * 864e5;
+// Semaine en cours = samedi → vendredi (heure de Ouagadougou = UTC). Les semaines passées disparaissent de « Articles à trier ».
+const CUR_WEEK = (() => { const d = new Date(); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 1) % 7); return d.toISOString().slice(0, 10); })();
+const inDays = a => a.week_start === CUR_WEEK;
 
 // ---------- Articles à trier ----------
 function renderTri() {
@@ -141,7 +143,7 @@ function renderTri() {
     ${chip('a_trier', 'À trier')}${chip('retenu', 'Retenus')}${chip('ecarte', 'Écartés')}${chip('autres', 'Non proposés')}
     <span class="sp"></span>
     <select id="secF"><option value="">Toutes les rubriques</option>${SECTIONS.map(([c, l]) => `<option value="${c}" ${secF === c ? 'selected' : ''}>${esc(l.split(' / ')[0])}</option>`).join('')}</select>
-    <select id="days">${[[2, '2 derniers jours'], [7, '7 derniers jours'], [14, '14 derniers jours'], [40, '40 derniers jours']].map(([v, l]) => `<option value="${v}" ${days === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <span class="help" style="margin:0">Semaine ${esc(weekLabel(CUR_WEEK))}</span>
   </div>`;
   if (filt === 'autres') html += `<p class="help" style="margin:-4px 0 12px">Articles collectés que le tri automatique n'a pas proposés. Si l'un d'eux aurait dû l'être, marquez-le « Retenu » : le système apprend de vos choix.</p>`;
   if (!list.length) html += `<div class="empty">${filt === 'a_trier' ? 'Rien à trier pour cette période. 🎉' : 'Aucun article.'}</div>`;
@@ -178,7 +180,6 @@ function renderTri() {
   };
   $('#main').querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; renderTri(); });
   $('#secF').onchange = e => { secF = e.target.value; renderTri(); };
-  $('#days').onchange = e => { days = +e.target.value; renderTri(); };
   bindCards();
 }
 
