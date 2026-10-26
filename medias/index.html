@@ -42,6 +42,7 @@ h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 .tag.warn{background:#FFF4DC;color:var(--warn)}
 .sum{grid-column:1/-1;color:#24323F;white-space:pre-wrap;cursor:text;border-radius:6px;padding:2px 4px;margin:0 -4px}
 .sum:hover,.esum:hover{background:#F6F8FB}
+.mv{float:right;display:flex;gap:4px;margin-left:8px}.mv .btn{padding:2px 8px;line-height:1.2}.mv .btn:disabled{opacity:.3;cursor:default}
 .esum{cursor:text;display:block;white-space:pre-wrap;border-radius:6px}
 .sum textarea{width:100%;min-height:90px}
 .others{grid-column:1/-1;font-size:12.5px;color:var(--mut)}
@@ -262,14 +263,16 @@ function renderSem() {
   const ret = ARTS.filter(a => a.week_start === week && a.decision === 'retenu');
   const pending = ARTS.filter(a => a.week_start === week && a.ai_relevant && !a.decision).length;
   let doc = `<p><b>MONITORING DES MÉDIAS — semaine ${esc(weekLabel(week))}</b></p>`;
-  let n = 0;
+  let n = 0; const GROUPS = {};
   for (const [code, label] of SECTIONS) {
-    const g = ret.filter(a => (a.section || 'NAT') === code).sort((x, y) => new Date(y.published_at) - new Date(x.published_at));
+    // Ordre : celui choisi par PI (flèches ↑ ↓, colonne week_rank), sinon le plus récent d'abord
+    const g = ret.filter(a => (a.section || 'NAT') === code).sort((x, y) => (x.week_rank ?? 1e9) - (y.week_rank ?? 1e9) || new Date(y.published_at) - new Date(x.published_at));
     if (!g.length) continue;
-    doc += `<h3>${esc(label)}</h3>` + g.map(a => {
+    GROUPS[code] = g;
+    doc += `<h3>${esc(label)}</h3>` + g.map((a, i) => {
       n++;
       const o = a.other_links || [];
-      return `<div class="it"><a href="${esc(a.url)}">${esc(a.title)}</a> – ${esc(a.outlet || '')}<br><span class="d">${fdate(a.published_at)}</span><br><span class="esum" data-id="${a.id}" title="Cliquer pour modifier le résumé">${esc(a.summary || '') || '<i style="color:#8A99A8">Pas de résumé — cliquer pour en écrire un.</i>'}</span>` +
+      return `<div class="it"><span class="mv"><button class="btn" data-mv="-1" data-sec="${code}" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Monter">↑</button><button class="btn" data-mv="1" data-sec="${code}" data-i="${i}" ${i === g.length - 1 ? 'disabled' : ''} title="Descendre">↓</button></span><a href="${esc(a.url)}">${esc(a.title)}</a> – ${esc(a.outlet || '')}<br><span class="d">${fdate(a.published_at)}</span><br><span class="esum" data-id="${a.id}" title="Cliquer pour modifier le résumé">${esc(a.summary || '') || '<i style="color:#8A99A8">Pas de résumé — cliquer pour en écrire un.</i>'}</span>` +
         (o.length ? `<br>Autre lien : ${o.map(x => `<a href="${esc(x.url)}">${esc(x.outlet || x.url)}</a>`).join(' ; ')}` : '') + `</div>`;
     }).join('');
   }
@@ -279,9 +282,19 @@ function renderSem() {
       <button class="btn pri" id="copy" ${n ? '' : 'disabled'}>Copier pour Outlook</button>
     </div>
     ${pending ? `<p class="help" style="margin:-4px 0 12px">${pending} article(s) de cette semaine restent à trier dans « Articles à trier ».</p>` : ''}
-    ${n ? `<div class="doc" id="doc">${doc}</div><p class="help">${n} article(s) retenu(s). Cliquez sur un résumé pour le modifier. « Copier pour Outlook » copie le texte avec les liens et la mise en forme : collez-le directement dans un e-mail.</p>`
+    ${n ? `<div class="doc" id="doc">${doc}</div><p class="help">${n} article(s) retenu(s). Cliquez sur un résumé pour le modifier ; flèches ↑ ↓ pour changer l'ordre dans une rubrique. « Copier pour Outlook » copie le texte avec les liens et la mise en forme : collez-le directement dans un e-mail.</p>`
         : '<div class="empty">Aucun article retenu pour cette semaine. Marquez des articles « Retenu » dans « Articles à trier ».</div>'}`;
   $('#wk').onchange = e => { week = e.target.value; renderSem(); };
+  // Flèches ↑ ↓ : échanger avec le voisin puis enregistrer l'ordre de toute la rubrique
+  $('#main').querySelectorAll('[data-mv]').forEach(b => b.onclick = async () => {
+    const g = [...GROUPS[b.dataset.sec]], i = +b.dataset.i, j = i + +b.dataset.mv;
+    if (j < 0 || j >= g.length) return;
+    [g[i], g[j]] = [g[j], g[i]];
+    try {
+      await Promise.all(g.map((a, k) => a.week_rank === k + 1 ? null : patch(a.id, { week_rank: k + 1 })));
+      renderSem();
+    } catch (er) { toast('Erreur : ' + er.message); }
+  });
   // Modifier un résumé directement dans le résumé de la semaine
   $('#main').querySelectorAll('.esum').forEach(sp => sp.onclick = () => {
     if (sp.querySelector('textarea')) return;
@@ -299,15 +312,16 @@ function renderSem() {
   const c = $('#copy');
   if (c) c.onclick = async () => {
     const node = $('#doc').cloneNode(true);
-    node.querySelectorAll('.editbox').forEach(x => x.remove());
+    node.querySelectorAll('.editbox, .mv').forEach(x => x.remove());
     node.querySelectorAll('.esum').forEach(x => { if (x.querySelector('i')) x.remove(); else x.replaceWith(...x.childNodes); });
     const html = `<div style="font-family:Calibri,Arial,sans-serif;font-size:11pt">${node.innerHTML.replace(/<h3>/g, '<p style="margin:14pt 0 6pt"><b><u>').replace(/<\/h3>/g, '</u></b></p>').replace(/class="it"/g, 'style="margin:0 0 10pt"').replace(/class="d"/g, 'style="color:#555"')}</div>`;
     try {
-      await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([$('#doc').innerText], { type: 'text/plain' }) })]);
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([(() => { const t = $('#doc').cloneNode(true); t.querySelectorAll('.mv, .editbox').forEach(x => x.remove()); return t.textContent; })()], { type: 'text/plain' }) })]);
       toast('Copié — collez dans Outlook');
     } catch (e) {
+      const hid = [...$('#doc').querySelectorAll('.mv')]; hid.forEach(x => x.style.display = 'none');
       const r = document.createRange(); r.selectNodeContents($('#doc')); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-      document.execCommand('copy'); s.removeAllRanges(); toast('Copié');
+      document.execCommand('copy'); s.removeAllRanges(); hid.forEach(x => x.style.display = ''); toast('Copié');
     }
     AUTH.log && AUTH.log('media_week_copy', week);
   };
