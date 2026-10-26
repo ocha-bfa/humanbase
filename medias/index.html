@@ -42,7 +42,7 @@ h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 .tag.warn{background:#FFF4DC;color:var(--warn)}
 .sum{grid-column:1/-1;color:#24323F;white-space:pre-wrap;cursor:text;border-radius:6px;padding:2px 4px;margin:0 -4px}
 .sum:hover,.esum:hover{background:#F6F8FB}
-.mv{float:right;display:flex;gap:4px;margin-left:8px}.mv .btn{padding:2px 8px;line-height:1.2}.mv .btn:disabled{opacity:.3;cursor:default}
+.mv{float:right;display:flex;gap:4px;margin-left:8px}.mv .btn{padding:2px 9px;line-height:1.2;background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}.mv .btn:hover{filter:brightness(1.12)}.mv .btn:disabled{visibility:hidden}
 .esum{cursor:text;display:block;white-space:pre-wrap;border-radius:6px}
 .sum textarea{width:100%;min-height:90px}
 .others{grid-column:1/-1;font-size:12.5px;color:var(--mut)}
@@ -55,7 +55,8 @@ h2.sec{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--
 .acts .e:not(.on):hover{background:var(--no-50);color:var(--no)}
 .empty{color:var(--mut);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:28px;text-align:center}
 .doc{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px 28px;font-family:Calibri,'Segoe UI',sans-serif;font-size:14.5px}
-.doc h3{font-size:14.5px;margin:20px 0 8px;text-decoration:underline}
+.doc h3{font-size:14.5px;margin:26px 0 10px;text-decoration:underline;color:var(--blue);background:var(--blue-50);padding:7px 10px;border-left:4px solid var(--blue);border-radius:4px}
+.doc h3:first-of-type{margin-top:14px}
 .doc .it{margin:0 0 14px}
 .doc .it a{color:#0563C1}
 .doc .d{color:#555}
@@ -272,7 +273,7 @@ function renderSem() {
     doc += `<h3>${esc(label)}</h3>` + g.map((a, i) => {
       n++;
       const o = a.other_links || [];
-      return `<div class="it"><span class="mv"><button class="btn" data-mv="-1" data-sec="${code}" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Monter">↑</button><button class="btn" data-mv="1" data-sec="${code}" data-i="${i}" ${i === g.length - 1 ? 'disabled' : ''} title="Descendre">↓</button></span><a href="${esc(a.url)}">${esc(a.title)}</a> – ${esc(a.outlet || '')}<br><span class="d">${fdate(a.published_at)}</span><br><span class="esum" data-id="${a.id}" title="Cliquer pour modifier le résumé">${esc(a.summary || '') || '<i style="color:#8A99A8">Pas de résumé — cliquer pour en écrire un.</i>'}</span>` +
+      return `<div class="it">${g.length > 1 ? `<span class="mv"><button class="btn" data-mv="-1" data-sec="${code}" data-i="${i}" ${i === 0 ? 'disabled' : ''} title="Monter">↑</button><button class="btn" data-mv="1" data-sec="${code}" data-i="${i}" ${i === g.length - 1 ? 'disabled' : ''} title="Descendre">↓</button></span>` : ''}<a href="${esc(a.url)}">${esc(a.title)}</a> – ${esc(a.outlet || '')}<br><span class="d">${fdate(a.published_at)}</span><br><span class="esum" data-id="${a.id}" title="Cliquer pour modifier le résumé">${esc(a.summary || '') || '<i style="color:#8A99A8">Pas de résumé — cliquer pour en écrire un.</i>'}</span>` +
         (o.length ? `<br>Autre lien : ${o.map(x => `<a href="${esc(x.url)}">${esc(x.outlet || x.url)}</a>`).join(' ; ')}` : '') + `</div>`;
     }).join('');
   }
