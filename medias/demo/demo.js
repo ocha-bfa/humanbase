@@ -43,7 +43,7 @@
   const track = (event, detail) => {
     if (ME) return;
     try {
-      fetch(SB + '/rest/v1/rpc/media_demo_log', { method: 'POST', keepalive: true,
+      fetch(SB + '/rest/v1/rpc/media_demo_log', { method: 'POST',
         headers: { apikey: ANON, Authorization: 'Bearer ' + ANON, 'Content-Type': 'application/json' },
         body: JSON.stringify({ p_visit: VISIT, p_event: event, p_detail: detail == null ? null : String(detail), p_tz: TZ, p_lang: navigator.language || '', p_demo_lang: window.DEMO_LANG || '' })
       }).catch(() => {});
@@ -103,6 +103,6 @@
     throw new Error(window.DEMO_LANG === 'en' ? 'not available in the demo' : 'non disponible en démo');
   };
 
-  window.DEMO_LANG_SET = l => { track('lang', l); try { localStorage.setItem('mm_demo_lang', l); } catch (e) {} setTimeout(() => location.reload(), 150); };
-  window.DEMO_RESET = () => { track('reset'); try { localStorage.removeItem(KEY); localStorage.removeItem('mm_view'); } catch (e) {} setTimeout(() => location.reload(), 150); };
+  window.DEMO_LANG_SET = l => { track('lang', l); try { localStorage.setItem('mm_demo_lang', l); } catch (e) {} setTimeout(() => location.reload(), 400); };
+  window.DEMO_RESET = () => { track('reset'); try { localStorage.removeItem(KEY); localStorage.removeItem('mm_view'); } catch (e) {} setTimeout(() => location.reload(), 400); };
 })();
