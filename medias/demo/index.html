@@ -21,27 +21,27 @@ Chargement de la démonstration…
       EN ? fetch('en.json', { cache: 'no-cache' }).then(r => r.json()) : []]);
     let h = page;
     const inline = '<script>window.DEMO_LANG=' + JSON.stringify(LANG) + ';window.DEMO_SNAP=' + snap.replace(/<\//g, '<\\/') + ';window.DEMO_WEEK=DEMO_SNAP.cur_week;<\/script>';
-    const btn = "border:1px solid #C9A55A;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;color:inherit";
-    const sw = `<span style="margin-left:8px;white-space:nowrap"><button onclick="DEMO_LANG_SET('fr')" style="${btn};${EN ? '' : 'background:#5C3D00;color:#fff'}">FR</button> <button onclick="DEMO_LANG_SET('en')" style="${btn};${EN ? 'background:#5C3D00;color:#fff' : ''}">EN</button></span>`;
+    const btn = "display:inline-block;white-space:nowrap;border:1px solid #C9A55A;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;color:inherit;line-height:1.45";
+    const sw = `<span style="margin-left:4px"><button onclick="DEMO_LANG_SET('fr')" style="${btn};${EN ? '' : 'background:#5C3D00;color:#fff'}">FR</button> <button onclick="DEMO_LANG_SET('en')" style="${btn};${EN ? 'background:#5C3D00;color:#fff' : ''}">EN</button></span>`;
     const bar = EN
       ? `<b>Demo mode</b> — real articles collected and sorted automatically on 29 October 2026 (week of 24–30 October).
         Try everything: Retain / Discard, sections, summaries, order, Word / CSV export, sources.
         Your changes stay <b>in your browser</b> only — nothing is sent.
         <br><i>The real product is in French for the OCHA Burkina Faso PI team; titles and summaries were machine-translated for this demo.</i>
-        <a href="guide.html?lang=en" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 How to use</a>
-        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Reset demo</button>`
+        <span class="demoBtns"><a href="guide.html?lang=en" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 How to use</a>
+        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Reset demo</button>${sw}</span>`
       : `<b>Mode démonstration</b> — articles réels collectés et triés automatiquement le 29 octobre 2026 (semaine du 24 au 30 octobre).
         Essayez tout : Retenu / Écarté, rubriques, résumés, ordre, export Word / CSV, sources.
         Vos modifications restent <b>dans votre navigateur</b> uniquement — rien n'est envoyé.
-        <a href="guide.html?lang=fr" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 Mode d'emploi</a>
-        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Réinitialiser la démo</button>`;
+        <span class="demoBtns"><a href="guide.html?lang=fr" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 Mode d'emploi</a>
+        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Réinitialiser la démo</button>${sw}</span>`;
     const swaps = [
       ['<script src="../auth.js"><\/script>', () => inline + '<script src="demo.js"><\/script>'],
       ['async function api(', 'async function api_reel('],
       ['const CUR_WEEK = (', 'const CUR_WEEK = window.DEMO_WEEK || ('],
       ['<title>Monitoring médias', EN ? '<title>Demo — Media monitoring' : '<title>Démo — Monitoring médias'],
       ['<small>OCHA BURKINA FASO</small>', EN ? '<small>OCHA BURKINA FASO · DEMO</small>' : '<small>OCHA BURKINA FASO · DÉMONSTRATION</small>'],
-      ['<body>', () => `<body><div id="demoBar" style="background:#FFF4DC;color:#5C3D00;border-bottom:1px solid #F0D9A8;font:13px/1.45 'DM Sans','Segoe UI',sans-serif;padding:8px 16px;text-align:center">${bar}${sw}</div>`],
+      ['<body>', () => `<body><div id="demoBar" style="background:#FFF4DC;color:#5C3D00;border-bottom:1px solid #F0D9A8;font:13px/1.45 'DM Sans','Segoe UI',sans-serif;padding:8px 16px;text-align:center">${bar}</div><style>#demoBar .demoBtns{display:inline-flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px;vertical-align:middle;margin-left:6px}#demoBar .demoBtns > *{margin-left:0 !important}</style>`],
     ];
     for (const [a, b] of swaps) {
       if (!h.includes(a)) throw new Error('page principale modifiée (« ' + a.slice(0, 40) + ' » introuvable)');
