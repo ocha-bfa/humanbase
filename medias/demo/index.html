@@ -36,7 +36,7 @@ Chargement de la démonstration…
         <span class="demoBtns"><a href="guide.html?lang=fr" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 Mode d'emploi</a>
         <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Réinitialiser la démo</button>${sw}</span>`;
     const swaps = [
-      ['<script src="../auth.js"><\/script>', () => inline + '<script src="demo.js"><\/script>'],
+      ['<script src="../auth.js"><\/script>', () => inline + '<script src="demo.js?v=' + Date.now() + '"><\/script>'],
       ['async function api(', 'async function api_reel('],
       ['const CUR_WEEK = (', 'const CUR_WEEK = window.DEMO_WEEK || ('],
       ['<title>Monitoring médias', EN ? '<title>Demo — Media monitoring' : '<title>Démo — Monitoring médias'],
