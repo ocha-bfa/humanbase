@@ -12,11 +12,15 @@
   const sat = iso => { const d = new Date(iso); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - (d.getUTCDay() + 1) % 7); return d.toISOString().slice(0, 10); };
   let ARTS = [], SRCS = [];
   const ready = (window.DEMO_SNAP ? Promise.resolve(window.DEMO_SNAP) : fetch('snapshot.json').then(r => r.json())).then(snap => {
+    const EN = window.DEMO_LANG === 'en';
+    const SRC_EN = { 'ONU Info (Afrique)': 'UN News (Africa)', 'Google News — Burkina humanitaire': 'Google News — Burkina humanitarian',
+      'Google News — Humanitaire mondial (EN)': 'Google News — Global humanitarian (EN)', 'ReliefWeb — rapports Burkina': 'ReliefWeb — Burkina reports' };
     ARTS = snap.articles.map(a => Object.assign({
       decided_by: null, decided_at: null, summary_edited: false, triaged_at: snap.taken,
       week_start: sat(a.published_at)
-    }, a, ST.a[a.id] || {}));
-    SRCS = snap.sources.map(s => Object.assign({ last_fetch_at: snap.taken + 'T09:08:00Z' }, s, ST.s[s.id] || {}))
+    }, a, EN && a.en ? { title: a.en.title || a.title, summary: a.en.summary ?? a.summary, decided_by: ({ 'équipe PI': 'PI team', 'exemple': 'example' })[a.decided_by] || a.decided_by } : {}, ST.a[a.id] || {}));
+    SRCS = snap.sources.map(s => Object.assign({ last_fetch_at: snap.taken + 'T09:08:00Z' }, s,
+        EN ? { name: SRC_EN[s.name] || s.name, last_status: s.last_status.replace('articles lus', 'articles read').replace('nouveaux', 'new') } : {}, ST.s[s.id] || {}))
       .concat(ST.ns.map(s => Object.assign({}, s, ST.s[s.id] || {})));
     return true;
   });
@@ -56,8 +60,9 @@
       SRCS.filter(s => match(s, p)).forEach(s => { Object.assign(s, body); ST.s[s.id] = Object.assign(ST.s[s.id] || {}, body); });
       save(ST); return null;
     }
-    throw new Error('non disponible en démo');
+    throw new Error(window.DEMO_LANG === 'en' ? 'not available in the demo' : 'non disponible en démo');
   };
 
+  window.DEMO_LANG_SET = l => { try { localStorage.setItem('mm_demo_lang', l); } catch (e) {} location.reload(); };
   window.DEMO_RESET = () => { try { localStorage.removeItem(KEY); localStorage.removeItem('mm_view'); } catch (e) {} location.reload(); };
 })();

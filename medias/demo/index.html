@@ -12,27 +12,41 @@ Chargement de la démonstration…
 // la connexion (auth.js) et la base de données par demo.js (données locales au navigateur).
 (async () => {
   try {
-    const [page, snap] = await Promise.all([
+    // Langue de la démo : anglais par défaut (public surtout anglophone), bascule FR | EN dans le bandeau
+    let LANG = 'en'; try { LANG = localStorage.getItem('mm_demo_lang') || 'en'; } catch (e) {}
+    const EN = LANG === 'en';
+    const [page, snap, pairs] = await Promise.all([
       fetch('../index.html', { cache: 'no-cache' }).then(r => r.text()),
-      fetch('snapshot.json', { cache: 'no-cache' }).then(r => r.text())]);
+      fetch('snapshot.json', { cache: 'no-cache' }).then(r => r.text()),
+      EN ? fetch('en.json', { cache: 'no-cache' }).then(r => r.json()) : []]);
     let h = page;
-    const inline = '<script>window.DEMO_SNAP=' + snap.replace(/<\//g, '<\\/') + ';window.DEMO_WEEK=DEMO_SNAP.cur_week;<\/script>';
+    const inline = '<script>window.DEMO_LANG=' + JSON.stringify(LANG) + ';window.DEMO_SNAP=' + snap.replace(/<\//g, '<\\/') + ';window.DEMO_WEEK=DEMO_SNAP.cur_week;<\/script>';
+    const btn = "border:1px solid #C9A55A;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;color:inherit";
+    const sw = `<span style="margin-left:8px;white-space:nowrap"><button onclick="DEMO_LANG_SET('fr')" style="${btn};${EN ? '' : 'background:#5C3D00;color:#fff'}">FR</button> <button onclick="DEMO_LANG_SET('en')" style="${btn};${EN ? 'background:#5C3D00;color:#fff' : ''}">EN</button></span>`;
+    const bar = EN
+      ? `<b>Demo mode</b> — real articles collected and sorted automatically on 29 October 2026 (week of 24–30 October).
+        Try everything: Retain / Discard, sections, summaries, order, Word / CSV export, sources.
+        Your changes stay <b>in your browser</b> only — nothing is sent.
+        <br><i>The real product is in French for the OCHA Burkina Faso PI team; titles and summaries were machine-translated for this demo.</i>
+        <button onclick="DEMO_RESET()" style="margin-left:8px;${btn}">↺ Reset demo</button>`
+      : `<b>Mode démonstration</b> — articles réels collectés et triés automatiquement le 29 octobre 2026 (semaine du 24 au 30 octobre).
+        Essayez tout : Retenu / Écarté, rubriques, résumés, ordre, export Word / CSV, sources.
+        Vos modifications restent <b>dans votre navigateur</b> uniquement — rien n'est envoyé.
+        <button onclick="DEMO_RESET()" style="margin-left:8px;${btn}">↺ Réinitialiser la démo</button>`;
     const swaps = [
       ['<script src="../auth.js"><\/script>', () => inline + '<script src="demo.js"><\/script>'],
       ['async function api(', 'async function api_reel('],
       ['const CUR_WEEK = (', 'const CUR_WEEK = window.DEMO_WEEK || ('],
-      ['<title>Monitoring médias', '<title>Démo — Monitoring médias'],
-      ['<small>OCHA BURKINA FASO</small>', '<small>OCHA BURKINA FASO · DÉMONSTRATION</small>'],
-      ['<body>', `<body><div id="demoBar" style="background:#FFF4DC;color:#5C3D00;border-bottom:1px solid #F0D9A8;font:13px/1.45 'DM Sans','Segoe UI',sans-serif;padding:8px 16px;text-align:center">
-        <b>Mode démonstration</b> — articles réels collectés et triés automatiquement le 29 octobre 2026 (semaine du 24 au 30 octobre).
-        Essayez tout : Retenu / Écarté, rubriques, résumés, ordre, export Word / CSV, sources.
-        Vos modifications restent <b>dans votre navigateur</b> uniquement — rien n'est envoyé.
-        <button onclick="DEMO_RESET()" style="margin-left:8px;border:1px solid #C9A55A;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit">↺ Réinitialiser la démo</button></div>`],
+      ['<title>Monitoring médias', EN ? '<title>Demo — Media monitoring' : '<title>Démo — Monitoring médias'],
+      ['<small>OCHA BURKINA FASO</small>', EN ? '<small>OCHA BURKINA FASO · DEMO</small>' : '<small>OCHA BURKINA FASO · DÉMONSTRATION</small>'],
+      ['<body>', () => `<body><div id="demoBar" style="background:#FFF4DC;color:#5C3D00;border-bottom:1px solid #F0D9A8;font:13px/1.45 'DM Sans','Segoe UI',sans-serif;padding:8px 16px;text-align:center">${bar}${sw}</div>`],
     ];
     for (const [a, b] of swaps) {
       if (!h.includes(a)) throw new Error('page principale modifiée (« ' + a.slice(0, 40) + ' » introuvable)');
       h = h.replace(a, b);  // b peut être une fonction (évite l'interprétation de « $ » dans les données)
     }
+    // Interface en anglais : remplacements de textes (non bloquants — un texte nouveau reste en français)
+    for (const [fr, en] of pairs) h = h.split(fr).join(en);
     document.open(); document.write(h); document.close();
   } catch (e) {
     document.body.textContent = 'La démonstration n’a pas pu se charger : ' + e.message;

@@ -1,0 +1,346 @@
+[
+[
+"<html lang=\"fr\">",
+"<html lang=\"en\">"
+],
+[
+"<b>Monitoring médias</b>",
+"<b>Media monitoring</b>"
+],
+[
+"Articles à trier <span",
+"Articles to sort <span"
+],
+[
+">Résumé de la semaine</button>",
+">Weekly summary</button>"
+],
+[
+">Chargement…<",
+">Loading…<"
+],
+[
+"'Perspectives nationales / Actualités générales'",
+"'National perspectives / General news'"
+],
+[
+"'Coopération bilatérale / Perspectives régionales / Internationales'",
+"'Bilateral cooperation / Regional / International perspectives'"
+],
+[
+"'Perspectives humanitaires / ONU'",
+"'Humanitarian perspectives / UN'"
+],
+[
+"'Opinions / Analyses'",
+"'Opinions / Analysis'"
+],
+[
+"'fr-FR'",
+"'en-GB'"
+],
+[
+"chip('a_trier', 'À trier')",
+"chip('a_trier', 'To sort')"
+],
+[
+"chip('retenu', 'Retenus')",
+"chip('retenu', 'Retained')"
+],
+[
+"chip('ecarte', 'Écartés')",
+"chip('ecarte', 'Discarded')"
+],
+[
+"chip('autres', 'Non proposés')",
+"chip('autres', 'Not proposed')"
+],
+[
+"Toutes les rubriques",
+"All sections"
+],
+[
+"Semaine ${esc(weekLabel(CUR_WEEK))}",
+"Week ${esc(weekLabel(CUR_WEEK))}"
+],
+[
+"Articles collectés que le tri automatique n'a pas proposés. Si l'un d'eux aurait dû l'être, marquez-le « Retenu » : le système apprend de vos choix.",
+"Articles collected that the automatic sort did not propose. If one of them should have been, mark it “Retain”: the system learns from your choices."
+],
+[
+"'Rien à trier pour cette période. 🎉' : 'Aucun article.'",
+"'Nothing left to sort for this period. 🎉' : 'No articles.'"
+],
+[
+"★ À ne pas manquer",
+"★ Must read"
+],
+[
+"Les 10 articles jugés les plus importants. Pressé ? Traitez ceux-ci puis « Écarter le reste ».",
+"The 10 articles judged most important. In a hurry? Handle these, then “Discard the rest”."
+],
+[
+"✕ Écarter le reste (${list.length} article${list.length > 1 ? 's' : ''} non triés${secF ? ' de cette rubrique' : ''})",
+"✕ Discard the rest (${list.length} unsorted article${list.length > 1 ? 's' : ''}${secF ? ' in this section' : ''})"
+],
+[
+"Tout ce qui n'a pas été marqué « Retenu » dans cette liste passe en « Écartés ». Vous pourrez toujours le repêcher dans l'onglet « Écartés ».",
+"Everything in this list not marked “Retain” moves to “Discarded”. You can still rescue it from the “Discarded” tab."
+],
+[
+"Confirmer : écarter ",
+"Confirm: discard "
+],
+[
+"'En cours…'",
+"'Working…'"
+],
+[
+"' article(s) écarté(s)'",
+"' article(s) discarded'"
+],
+[
+"Le texte de l\\'article n\\'a pas pu être lu : résumé rédigé à partir du titre. À compléter si l\\'article est retenu.",
+"The article text could not be read: summary written from the title. Complete it if the article is retained."
+],
+[
+">résumé d\\'après le titre</span>",
+">summary from title only</span>"
+],
+[
+"${esc(a.decision === 'retenu' ? 'retenu' : 'écarté')} par ${",
+"${esc(a.decision === 'retenu' ? 'retained' : 'discarded')} by ${"
+],
+[
+">✓ Retenu</button>",
+">✓ Retain</button>"
+],
+[
+">✕ Écarté</button>",
+">✕ Discard</button>"
+],
+[
+"title=\"Cliquer pour modifier le résumé\"",
+"title=\"Click to edit the summary\""
+],
+[
+"Pas encore de résumé — cliquer pour en écrire un.",
+"No summary yet — click to write one."
+],
+[
+"Autre${others.length > 1 ? 's' : ''} lien${others.length > 1 ? 's' : ''} : ",
+"Other link${others.length > 1 ? 's' : ''}: "
+],
+[
+"(nd === 'retenu' ? 'Retenu' : 'Écarté') : 'Décision annulée'",
+"(nd === 'retenu' ? 'Retained' : 'Discarded') : 'Decision undone'"
+],
+[
+"toast('Rubrique modifiée')",
+"toast('Section changed')"
+],
+[
+">Enregistrer</button>",
+">Save</button>"
+],
+[
+">Annuler</button>",
+">Cancel</button>"
+],
+[
+"toast('Résumé enregistré')",
+"toast('Summary saved')"
+],
+[
+"return 'du ' + s.toLocaleDateString",
+"return 'from ' + s.toLocaleDateString"
+],
+[
+"' au ' + fdate(e)",
+"' to ' + fdate(e)"
+],
+[
+"MONITORING DES MÉDIAS — semaine ${",
+"MEDIA MONITORING — week ${"
+],
+[
+">Semaine ${esc(weekLabel(w))}</option>",
+">Week ${esc(weekLabel(w))}</option>"
+],
+[
+"title=\"Monter\"",
+"title=\"Move up\""
+],
+[
+"title=\"Descendre\"",
+"title=\"Move down\""
+],
+[
+"Pas de résumé — cliquer pour en écrire un.",
+"No summary — click to write one."
+],
+[
+"<br>Autre lien : ${",
+"<br>Other link: ${"
+],
+[
+"title=\"Télécharger le résumé de la semaine en document Word\"",
+"title=\"Download the weekly summary as a Word document\""
+],
+[
+"title=\"Télécharger la liste des articles retenus (ouvre dans Excel)\"",
+"title=\"Download the list of retained articles (opens in Excel)\""
+],
+[
+">Copier pour Outlook</button>",
+">Copy for Outlook</button>"
+],
+[
+"article(s) de cette semaine restent à trier dans « Articles à trier ».",
+"article(s) from this week are still to be sorted in “Articles to sort”."
+],
+[
+"article(s) retenu(s). Cliquez sur un résumé pour le modifier ; flèches ↑ ↓ pour changer l'ordre dans une rubrique. « Copier pour Outlook » copie le texte avec les liens et la mise en forme : collez-le directement dans un e-mail. « ⬇ Word » télécharge le même résumé en document Word ; « ⬇ CSV » la liste des articles retenus, à ouvrir dans Excel.",
+"article(s) retained. Click a summary to edit it; use the ↑ ↓ arrows to change the order within a section. “Copy for Outlook” copies the text with links and formatting: paste it straight into an e-mail. “⬇ Word” downloads the same summary as a Word document; “⬇ CSV” the list of retained articles, to open in Excel."
+],
+[
+"Aucun article retenu pour cette semaine. Marquez des articles « Retenu » dans « Articles à trier ».",
+"No retained articles for this week. Mark articles “Retain” in “Articles to sort”."
+],
+[
+"'Préparation…'",
+"'Preparing…'"
+],
+[
+"toast('Copié — collez dans Outlook')",
+"toast('Copied — paste into Outlook')"
+],
+[
+"toast('Copié')",
+"toast('Copied')"
+],
+[
+"run('MONITORING DES MÉDIAS', ",
+"run('MEDIA MONITORING', "
+],
+[
+"'OCHA Burkina Faso — semaine ' + weekLabel",
+"'OCHA Burkina Faso — week ' + weekLabel"
+],
+[
+"'(sans titre)'",
+"'(untitled)'"
+],
+[
+"run('Autre lien : ')",
+"run('Other link: ')"
+],
+[
+"'Monitoring des médias — semaine ' +",
+"'Media monitoring — week ' +"
+],
+[
+"toast('Document Word téléchargé')",
+"toast('Word document downloaded')"
+],
+[
+"'Monitoring_medias_OCHA_BFA_semaine_'",
+"'Media_monitoring_OCHA_BFA_week_'"
+],
+[
+"['Semaine', 'Rubrique', 'Ordre', 'Titre', 'Média', 'Date de publication', 'Résumé', 'Lien', 'Autres liens', 'Retenu par', 'Langue']",
+"['Week', 'Section', 'Order', 'Title', 'Outlet', 'Publication date', 'Summary', 'Link', 'Other links', 'Retained by', 'Language']"
+],
+[
+"toast('Fichier CSV téléchargé')",
+"toast('CSV file downloaded')"
+],
+[
+"'Flux RSS' : 'Google Actualités'",
+"'RSS feed' : 'Google News'"
+],
+[
+"title=\"La rubrique est choisie article par article lors du tri automatique\">selon l\\'article</span>",
+"title=\"The section is chosen article by article by the automatic sort\">per article</span>"
+],
+[
+">pas encore lue<",
+">not read yet<"
+],
+[
+"<h3>Ajouter une source</h3>",
+"<h3>Add a source</h3>"
+],
+[
+"<label>Nom<input id=\"sName\" placeholder=\"ex. Radio Oméga\">",
+"<label>Name<input id=\"sName\" placeholder=\"e.g. Radio Oméga\">"
+],
+[
+">Mots-clés (Google Actualités)</option>",
+">Keywords (Google News)</option>"
+],
+[
+">Flux RSS (adresse)</option>",
+">RSS feed (address)</option>"
+],
+[
+"<label id=\"lQ\">Mots-clés<input id=\"sQ\" placeholder='ex. \"Burkina\" Djibo  ou  site:omegabf.info'>",
+"<label id=\"lQ\">Keywords<input id=\"sQ\" placeholder='e.g. \"Burkina\" Djibo  or  site:omegabf.info'>"
+],
+[
+"<label>Langue<select id=\"sLang\"><option value=\"fr\">Français</option><option value=\"en\">Anglais</option>",
+"<label>Language<select id=\"sLang\"><option value=\"fr\">French</option><option value=\"en\">English</option>"
+],
+[
+"<label>Rubrique par défaut<select id=\"sSec\"><option value=\"\">Selon l'article</option>",
+"<label>Default section<select id=\"sSec\"><option value=\"\">Per article</option>"
+],
+[
+">Ajouter</button>",
+">Add</button>"
+],
+[
+"Mots-clés : tous les articles récents de Google Actualités qui correspondent (« site:exemple.bf » pour suivre un seul journal). Flux RSS : l'adresse du flux du site (souvent <i>…/feed</i> ou <i>…/rss</i>). La nouvelle source est lue à la prochaine heure pleine.",
+"Keywords: all recent Google News articles that match (“site:example.bf” to follow a single outlet). RSS feed: the site's feed address (often <i>…/feed</i> or <i>…/rss</i>). A new source is read at the next full hour (not in this demo)."
+],
+[
+"<th>Adresse / mots-clés</th><th>Rubrique</th><th>Dernière lecture</th>",
+"<th>Address / keywords</th><th>Section</th><th>Last read</th>"
+],
+[
+"'Adresse du flux' : 'Mots-clés'",
+"'Feed address' : 'Keywords'"
+],
+[
+"'https://exemple.bf/feed' : '\"Burkina\" Djibo  ou  site:omegabf.info'",
+"'https://example.bf/feed' : '\"Burkina\" Djibo  or  site:omegabf.info'"
+],
+[
+"'Indiquez un nom et ' + (k === 'rss' ? \"l'adresse du flux\" : 'des mots-clés')",
+"'Enter a name and ' + (k === 'rss' ? \"the feed address\" : 'keywords')"
+],
+[
+"\"L'adresse doit commencer par https://\"",
+"\"The address must start with https://\""
+],
+[
+"toast('Source ajoutée')",
+"toast('Source added')"
+],
+[
+"'Source activée' : 'Source désactivée'",
+"'Source enabled' : 'Source disabled'"
+],
+[
+"'Erreur Word : '",
+"'Word error: '"
+],
+[
+"'Erreur : '",
+"'Error: '"
+],
+[
+"Erreur de chargement",
+"Loading error"
+]
+]
