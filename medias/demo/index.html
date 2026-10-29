@@ -28,11 +28,13 @@ Chargement de la démonstration…
         Try everything: Retain / Discard, sections, summaries, order, Word / CSV export, sources.
         Your changes stay <b>in your browser</b> only — nothing is sent.
         <br><i>The real product is in French for the OCHA Burkina Faso PI team; titles and summaries were machine-translated for this demo.</i>
-        <button onclick="DEMO_RESET()" style="margin-left:8px;${btn}">↺ Reset demo</button>`
+        <a href="guide.html?lang=en" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 How to use</a>
+        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Reset demo</button>`
       : `<b>Mode démonstration</b> — articles réels collectés et triés automatiquement le 29 octobre 2026 (semaine du 24 au 30 octobre).
         Essayez tout : Retenu / Écarté, rubriques, résumés, ordre, export Word / CSV, sources.
         Vos modifications restent <b>dans votre navigateur</b> uniquement — rien n'est envoyé.
-        <button onclick="DEMO_RESET()" style="margin-left:8px;${btn}">↺ Réinitialiser la démo</button>`;
+        <a href="guide.html?lang=fr" target="_blank" style="margin-left:8px;${btn};text-decoration:none;background:#026CB6;border-color:#026CB6;color:#fff;font-weight:600">📖 Mode d'emploi</a>
+        <button onclick="DEMO_RESET()" style="margin-left:4px;${btn}">↺ Réinitialiser la démo</button>`;
     const swaps = [
       ['<script src="../auth.js"><\/script>', () => inline + '<script src="demo.js"><\/script>'],
       ['async function api(', 'async function api_reel('],

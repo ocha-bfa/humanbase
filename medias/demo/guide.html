@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media monitoring — demo guide — OCHA Burkina Faso</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#026CB6;--blue-50:#E8F1F9;--ink:#0F1923;--mut:#4A6070;--line:#E2E8F0;--ok:#2E7D32;--no:#B3261E}
+*{box-sizing:border-box}
+body{margin:0;background:#F7F9FC;color:var(--ink);font:14px/1.5 'DM Sans','Segoe UI',sans-serif}
+.top{max-width:860px;margin:0 auto;padding:14px 20px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.top .sp{flex:1}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font:inherit;font-weight:500;color:var(--ink);text-decoration:none}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.page{max-width:860px;margin:12px auto 40px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:30px 38px}
+.brand small{display:block;color:var(--blue);font-weight:700;letter-spacing:.05em;font-size:11px}
+h1{font-size:23px;margin:2px 0 6px}
+.lead{color:var(--mut);margin:0 0 14px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);background:var(--blue-50);border-left:4px solid var(--blue);border-radius:4px;padding:6px 10px;margin:20px 0 10px}
+p{margin:6px 0}
+.flow{display:flex;gap:6px;flex-wrap:wrap;align-items:stretch;margin:8px 0 4px}
+.flow div{flex:1 1 120px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;background:#FAFCFE}
+.flow b{display:block;color:var(--blue);font-size:13px}
+ol{margin:6px 0;padding-left:22px}
+ol li{margin:0 0 7px}
+ul{margin:6px 0;padding-left:20px}
+ul li{margin:0 0 4px}
+.k{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;font-size:12.5px;font-weight:600;background:#fff;white-space:nowrap}
+.k.ok{color:var(--ok)} .k.no{color:var(--no)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:6px 22px}
+.note{font-size:12.5px;color:var(--mut);border-top:1px solid var(--line);margin-top:18px;padding-top:10px}
+[data-l]{display:none} html[lang=en] [data-l=en], html[lang=fr] [data-l=fr]{display:revert}
+@media (max-width:640px){.page{padding:20px}.cols{grid-template-columns:1fr}}
+@page{size:A4;margin:11mm 13mm}
+@media print{body{background:#fff;font-size:11.4px;line-height:1.42}ol li{margin:0 0 5px}h1{font-size:21px}.top{display:none}.page{border:0;margin:0;padding:0;max-width:none}h2{margin:14px 0 7px;-webkit-print-color-adjust:exact;print-color-adjust:exact}.flow div{-webkit-print-color-adjust:exact;print-color-adjust:exact}h2,li,.flow{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a class="btn pri" href="./" data-l="en">▶ Open the demo</a><a class="btn pri" href="./" data-l="fr">▶ Ouvrir la démo</a>
+  <a class="btn" id="pdf" href="guide-en.pdf" download>⬇ PDF</a>
+  <button class="btn" onclick="print()" data-l="en">Print</button><button class="btn" onclick="print()" data-l="fr">Imprimer</button>
+  <span class="sp"></span>
+  <button class="btn" id="lfr" onclick="setL('fr')">FR</button><button class="btn" id="len" onclick="setL('en')">EN</button>
+</div>
+
+<div class="page">
+<div class="brand"><small>OCHA BURKINA FASO · INFORMATION MANAGEMENT &amp; PUBLIC INFORMATION</small></div>
+
+<!-- ===================== ENGLISH ===================== -->
+<div data-l="en">
+<h1>Media monitoring — quick guide to the demo</h1>
+<p class="lead">A tool built for the OCHA Burkina Faso Public Information (PI) team: it collects the press every hour, an AI pre-sorts and summarises, PI validates, and the weekly media review is ready to send.</p>
+
+<h2>How it works</h2>
+<div class="flow">
+  <div><b>1 · Collect</b>Every hour, from 26 sources: national press (RSS), Google News searches, regional/international outlets, ReliefWeb, FEWS NET, WHO.</div>
+  <div><b>2 · Clean</b>Direct publisher links, the same story from several outlets grouped as one, publication dates checked, article text read.</div>
+  <div><b>3 · AI sort</b>3 times a day: relevant or not, importance score, one of PI's 5 sections, short factual summary.</div>
+  <div><b>4 · PI review</b>PI marks each article <span class="k ok">✓ Retain</span> or <span class="k no">✕ Discard</span>. The AI learns from these choices.</div>
+  <div><b>5 · Weekly review</b>Saturday → Friday, in PI's usual format: copy into Outlook, or download Word / CSV.</div>
+</div>
+
+<h2>Try it in 5 minutes</h2>
+<ol>
+  <li><b>Articles to sort.</b> Start with <b>★ Must read</b> (the 10 highest-scored stories). Click <span class="k ok">✓ Retain</span> or <span class="k no">✕ Discard</span>; click again to undo. Change the section with the drop-down, or click a summary to edit it. The tag <i>summary from title only</i> means the article text could not be read (paywall, blocked site).</li>
+  <li><b>Discard the rest.</b> At the bottom of the list, two clicks move everything not retained to <b>Discarded</b> — nothing is lost, it can be rescued from that tab.</li>
+  <li><b>Not proposed.</b> Articles the AI judged irrelevant. Retaining one here teaches the sort that it missed something.</li>
+  <li><b>Weekly summary.</b> The retained articles laid out in the 5 sections. Reorder with ↑ ↓, edit any summary, then <b>Copy for Outlook</b> (paste straight into an e-mail), <b>⬇ Word</b> or <b>⬇ CSV</b> (opens in Excel). Use the week selector to see the example week of 17–23 October.</li>
+  <li><b>Sources.</b> Add a source with an RSS feed address or Google News keywords (e.g. <code>site:aib.media</code>), and switch sources on or off.</li>
+  <li><b>Start again</b> at any time with <b>↺ Reset demo</b>; switch the language with <b>FR | EN</b> (yellow banner).</li>
+</ol>
+
+<h2>The demo vs. the real tool</h2>
+<div class="cols">
+  <div><b>This demo</b><ul>
+    <li>No login. Real articles collected and sorted on 29 October 2026 (fixed snapshot).</li>
+    <li>Your clicks stay in your own browser; nothing is sent or shared.</li>
+    <li>English titles and summaries are machine-translated for the demo.</li>
+    <li>New sources are not actually read; the AI sort does not run.</li>
+  </ul></div>
+  <div><b>The real tool</b><ul>
+    <li>Personal login with a UN e-mail (link sent by e-mail); access by role.</li>
+    <li>Collection every hour, AI sort and summaries 3× a day; decisions shared by the PI team.</li>
+    <li>Works in French, the language of the Burkina press and of PI's product.</li>
+    <li>Retained articles also feed OCHA Burkina Faso's data platform (HumanBase questions, management dashboard).</li>
+  </ul></div>
+</div>
+
+<p class="note">Sections used (from PI's weekly e-mail): National perspectives / General news · Bilateral cooperation / Regional / International perspectives · Humanitarian perspectives / UN · Opinions / Analysis · International.<br>
+Built by the OCHA Burkina Faso Information Management Unit with the PI team. Questions or a walkthrough: Assefa Yewondwossen, Information Management Officer — assefa10@un.org.</p>
+</div>
+
+<!-- ===================== FRANÇAIS ===================== -->
+<div data-l="fr">
+<h1>Monitoring médias — guide rapide de la démo</h1>
+<p class="lead">Un outil conçu pour l'équipe Information publique (PI) d'OCHA Burkina Faso : il collecte la presse chaque heure, une IA pré-trie et résume, PI valide, et la revue de presse de la semaine est prête à envoyer.</p>
+
+<h2>Comment ça marche</h2>
+<div class="flow">
+  <div><b>1 · Collecte</b>Chaque heure, 26 sources : presse nationale (RSS), recherches Google Actualités, médias régionaux et internationaux, ReliefWeb, FEWS NET, OMS.</div>
+  <div><b>2 · Nettoyage</b>Liens directs vers l'éditeur, une même histoire reprise par plusieurs médias regroupée, dates vérifiées, texte de l'article lu.</div>
+  <div><b>3 · Tri IA</b>3 fois par jour : pertinent ou non, score d'importance, une des 5 rubriques de PI, résumé court et factuel.</div>
+  <div><b>4 · Validation PI</b>PI marque chaque article <span class="k ok">✓ Retenu</span> ou <span class="k no">✕ Écarté</span>. L'IA apprend de ces choix.</div>
+  <div><b>5 · Revue de la semaine</b>Samedi → vendredi, au format habituel de PI : copier dans Outlook, ou télécharger Word / CSV.</div>
+</div>
+
+<h2>Essayer en 5 minutes</h2>
+<ol>
+  <li><b>Articles à trier.</b> Commencez par <b>★ À ne pas manquer</b> (les 10 histoires au score le plus élevé). Cliquez <span class="k ok">✓ Retenu</span> ou <span class="k no">✕ Écarté</span> ; cliquez à nouveau pour annuler. Changez la rubrique avec la liste déroulante, ou cliquez sur un résumé pour le modifier. L'étiquette <i>résumé d'après le titre</i> signifie que le texte n'a pas pu être lu (accès payant, site bloqué).</li>
+  <li><b>Écarter le reste.</b> En bas de la liste, deux clics font passer tout ce qui n'est pas retenu dans <b>Écartés</b> — rien n'est perdu, on peut le repêcher dans cet onglet.</li>
+  <li><b>Non proposés.</b> Les articles jugés non pertinents par l'IA. En retenir un ici apprend au tri qu'il a manqué quelque chose.</li>
+  <li><b>Résumé de la semaine.</b> Les articles retenus, classés dans les 5 rubriques. Réordonnez avec ↑ ↓, modifiez un résumé, puis <b>Copier pour Outlook</b> (coller directement dans un e-mail), <b>⬇ Word</b> ou <b>⬇ CSV</b> (s'ouvre dans Excel). Le sélecteur de semaine montre aussi la semaine d'exemple du 17 au 23 octobre.</li>
+  <li><b>Sources.</b> Ajoutez une source par l'adresse d'un flux RSS ou des mots-clés Google Actualités (ex. <code>site:aib.media</code>), activez ou désactivez les sources.</li>
+  <li><b>Recommencer</b> à tout moment avec <b>↺ Réinitialiser la démo</b> ; changez de langue avec <b>FR | EN</b> (bandeau jaune).</li>
+</ol>
+
+<h2>La démo et l'outil réel</h2>
+<div class="cols">
+  <div><b>Cette démo</b><ul>
+    <li>Sans connexion. Articles réels collectés et triés le 29 octobre 2026 (instantané figé).</li>
+    <li>Vos clics restent dans votre navigateur ; rien n'est envoyé ni partagé.</li>
+    <li>Les titres et résumés anglais sont traduits automatiquement pour la démo.</li>
+    <li>Les nouvelles sources ne sont pas réellement lues ; le tri IA ne tourne pas.</li>
+  </ul></div>
+  <div><b>L'outil réel</b><ul>
+    <li>Connexion personnelle avec une adresse e-mail ONU (lien reçu par e-mail) ; accès selon le rôle.</li>
+    <li>Collecte chaque heure, tri et résumés IA 3 fois par jour ; décisions partagées par l'équipe PI.</li>
+    <li>Fonctionne en français, langue de la presse burkinabè et du produit de PI.</li>
+    <li>Les articles retenus alimentent aussi la plateforme de données d'OCHA Burkina Faso (questions HumanBase, tableau de bord de la direction).</li>
+  </ul></div>
+</div>
+
+<p class="note">Rubriques (reprises de l'e-mail hebdomadaire de PI) : Perspectives nationales / Actualités générales · Coopération bilatérale / Perspectives régionales / Internationales · Perspectives humanitaires / ONU · Opinions / Analyses · International.<br>
+Réalisé par l'Unité de gestion de l'information d'OCHA Burkina Faso avec l'équipe PI. Questions ou présentation : Assefa Yewondwossen, Information Management Officer — assefa10@un.org.</p>
+</div>
+</div>
+
+<script>
+function setL(l) {
+  document.documentElement.lang = l;
+  document.title = l === 'en' ? 'Media monitoring — demo guide — OCHA Burkina Faso' : 'Monitoring médias — guide de la démo — OCHA Burkina Faso';
+  document.getElementById('pdf').href = 'guide-' + l + '.pdf';
+  document.getElementById('lfr').classList.toggle('on', l === 'fr');
+  document.getElementById('len').classList.toggle('on', l === 'en');
+  try { localStorage.setItem('mm_demo_lang', l); } catch (e) {}
+}
+let L = new URLSearchParams(location.search).get('lang');
+if (!L) { try { L = localStorage.getItem('mm_demo_lang'); } catch (e) {} }
+setL(L === 'fr' ? 'fr' : 'en');
+</script>
+</body>
+</html>
