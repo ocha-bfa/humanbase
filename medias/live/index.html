@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veille médias — démo live (IA open source)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#026CB6;--blue-50:#E8F1F9;--ink:#0F1923;--mut:#4A6070;--line:#E2E8F0;--bg:#F7F9FC;--warn-bg:#FFF4DC;--warn:#5C3D00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 'DM Sans','Segoe UI',sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;flex-wrap:wrap}
+.brand small{display:block;color:var(--blue);font-weight:600;letter-spacing:.04em;font-size:11px}
+.brand b{font-size:18px}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
+.dot{width:8px;height:8px;border-radius:50%;background:#2E7D32;box-shadow:0 0 0 3px #E8F5E9}
+.bar{background:var(--warn-bg);color:var(--warn);border-bottom:1px solid #F0D9A8;font-size:13px;padding:8px 16px;text-align:center}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0 12px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px;color:var(--mut)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip .n{opacity:.75;margin-left:4px}
+input[type=search]{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:200px;flex:1;max-width:320px}
+.sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+h2{font-size:15px;margin:22px 0 10px;color:var(--ink)}
+h2 .n{color:var(--mut);font-weight:400}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.card.hl{border-left:4px solid #C9A55A}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--mut);margin-bottom:4px}
+.tag{background:var(--blue-50);color:var(--blue);border-radius:10px;padding:1px 8px;font-weight:600;font-size:11px}
+.card a{color:var(--ink);font-weight:600;text-decoration:none;font-size:15px}
+.card a:hover{color:var(--blue);text-decoration:underline}
+.card p{margin:6px 0 0;color:#2B3A47}
+.empty{color:var(--mut);padding:30px 0;text-align:center}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap top">
+    <div class="brand"><small>OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b>Revue de presse triée par une IA open source</b></div>
+    <div class="live"><span class="dot"></span><span id="updated">Chargement…</span></div>
+  </div>
+</header>
+<div class="bar">
+  <b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par <b>Qwen3.8 27B</b> (modèle open source), 3 fois par jour.
+  <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.
+</div>
+<main class="wrap">
+  <div class="controls" id="countries"></div>
+  <div class="controls">
+    <button class="chip on" data-days="7">7 derniers jours</button>
+    <button class="chip" data-days="14">14 jours</button>
+    <span class="sep"></span>
+    <input type="search" id="q" placeholder="Rechercher (titre, média, résumé)…">
+  </div>
+  <div class="controls" id="sections"></div>
+  <div id="out"><div class="empty">Chargement des articles…</div></div>
+</main>
+<footer>
+  Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>
+  Tri : Qwen3.8 27B (Alibaba, licence Apache 2.0) via OpenRouter · Données : HumanBase (OCHA Burkina Faso).
+</footer>
+<script>
+const SB = 'https://vshnatreclfntadwcyhy.supabase.co';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzaG5hdHJlY2xmbnRhZHdjeWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTA4NzcsImV4cCI6MjA4OTg2Njg3N30.VOxHkUKvYKtsdc2iwmsDMP9w-BWh3LZ4ZFLD4-qzjd8';
+const H = { apikey: ANON, Authorization: 'Bearer ' + ANON };
+const api = p => fetch(SB + '/rest/v1/' + p, { headers: H }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const st = { country: null, days: 7, section: null, q: '' };
+let ARTS = [], SECTIONS = [];
+
+async function init() {
+  try {
+    const [countries, sections] = await Promise.all([
+      api('media_public_live_countries?select=code,name_fr&order=name_fr'),
+      api('media_public_sections?select=code,label,ordre&order=ordre')]);
+    SECTIONS = sections;
+    if (!countries.length) { out('Aucun pays disponible pour le moment.'); return; }
+    st.country = countries[0].code;
+    const c = document.getElementById('countries');
+    c.innerHTML = countries.map(x => `<button class="chip${x.code === st.country ? ' on' : ''}" data-c="${esc(x.code)}">${esc(x.name_fr)}</button>`).join('');
+    c.onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; st.country = b.dataset.c; st.section = null; mark(c, b); load(); };
+    document.querySelectorAll('[data-days]').forEach(b => b.onclick = () => { st.days = +b.dataset.days; mark(b.parentElement, b, '[data-days]'); render(); });
+    document.getElementById('q').oninput = e => { st.q = e.target.value.trim().toLowerCase(); render(); };
+    load();
+  } catch (e) { out('La démonstration n’a pas pu se charger (' + esc(e.message) + ').'); }
+}
+function mark(parent, btn, sel = '.chip') { parent.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === btn)); }
+function out(msg) { document.getElementById('out').innerHTML = `<div class="empty">${msg}</div>`; }
+
+async function load() {
+  out('Chargement des articles…');
+  try {
+    ARTS = await api(`media_public_live?select=id,published_at,outlet,url,title,section_code,section,summary,score,sorted_at,lang&country_code=eq.${encodeURIComponent(st.country)}&order=published_at.desc&limit=1000`);
+    const last = ARTS.reduce((m, a) => a.sorted_at > m ? a.sorted_at : m, '');
+    document.getElementById('updated').textContent = last
+      ? 'Dernier tri : ' + new Date(last).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : 'En attente du premier tri';
+    render();
+  } catch (e) { out('Erreur de chargement (' + esc(e.message) + ').'); }
+}
+
+function render() {
+  const since = Date.now() - st.days * 864e5;
+  let list = ARTS.filter(a => new Date(a.published_at) >= since);
+  if (st.q) list = list.filter(a => (a.title + ' ' + a.outlet + ' ' + (a.summary || '')).toLowerCase().includes(st.q));
+  const counts = {}; list.forEach(a => counts[a.section_code] = (counts[a.section_code] || 0) + 1);
+  const s = document.getElementById('sections');
+  s.innerHTML = `<button class="chip${!st.section ? ' on' : ''}" data-s="">Toutes<span class="n">${list.length}</span></button>` +
+    SECTIONS.filter(x => counts[x.code]).map(x => `<button class="chip${st.section === x.code ? ' on' : ''}" data-s="${esc(x.code)}">${esc(x.label)}<span class="n">${counts[x.code]}</span></button>`).join('');
+  s.onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; st.section = b.dataset.s || null; render(); };
+  if (st.section) list = list.filter(a => a.section_code === st.section);
+  if (!list.length) { out('Aucun article pour cette sélection.'); return; }
+
+  const top = [...list].sort((a, b) => b.score - a.score).slice(0, 5);
+  const topIds = new Set(top.map(a => a.id));
+  let html = `<h2>À ne pas manquer <span class="n">· ${top.length}</span></h2>` + top.map(a => card(a, true)).join('');
+  const groups = SECTIONS.map(x => ({ x, items: list.filter(a => a.section_code === x.code && !topIds.has(a.id)) })).filter(g => g.items.length);
+  for (const g of groups) html += `<h2>${esc(g.x.label)} <span class="n">· ${g.items.length}</span></h2>` + g.items.map(a => card(a)).join('');
+  document.getElementById('out').innerHTML = html;
+}
+
+function card(a, isTop) {
+  const href = /^https?:\/\//.test(a.url) ? a.url : '#';
+  return `<div class="card${isTop ? ' hl' : ''}">
+    <div class="meta"><span class="tag">${esc(a.section_code || '')}</span><span>${esc(a.outlet)}</span><span>· ${fmt(a.published_at)}</span>${a.lang === 'en' ? '<span>· en anglais</span>' : ''}</div>
+    <a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>
+    ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
+  </div>`;
+}
+init();
+</script>
+</body>
+</html>
