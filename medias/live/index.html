@@ -45,7 +45,7 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
   </div>
 </header>
 <div class="bar">
-  <b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par <b>Qwen3.8 27B</b> (modèle open source), 3 fois par jour.
+  <b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA (<span id="engine">modèle en cours de chargement</span>), 3 fois par jour.
   <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.
 </div>
 <main class="wrap">
@@ -61,7 +61,7 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
 </main>
 <footer>
   Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>
-  Tri : Qwen3.8 27B (Alibaba, licence Apache 2.0) via OpenRouter · Données : HumanBase (OCHA Burkina Faso).
+  Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).
 </footer>
 <script>
 const SB = 'https://vshnatreclfntadwcyhy.supabase.co';
@@ -71,14 +71,16 @@ const api = p => fetch(SB + '/rest/v1/' + p, { headers: H }).then(r => { if (!r.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 const st = { country: null, days: 7, section: null, q: '' };
-let ARTS = [], SECTIONS = [];
+let ARTS = [], SECTIONS = [], ALLSECTIONS = [];
+const MODEL_NAMES = { 'qwen/qwen3.8-27b': 'Qwen3.8 27B (open source, Alibaba)', 'anthropic/claude-haiku-5.5': 'Claude Haiku 5.5 (Anthropic)' };
+const modelName = m => { if (!m) return 'modèle IA'; const k = Object.keys(MODEL_NAMES).find(k => m.startsWith(k)); return k ? MODEL_NAMES[k] : m; };
 
 async function init() {
   try {
     const [countries, sections] = await Promise.all([
       api('media_public_live_countries?select=code,name_fr&order=name_fr'),
-      api('media_public_sections?select=code,label,ordre&order=ordre')]);
-    SECTIONS = sections;
+      api('media_public_sections?select=country_code,code,label,ordre&order=ordre')]);
+    ALLSECTIONS = sections;
     if (!countries.length) { out('Aucun pays disponible pour le moment.'); return; }
     st.country = countries[0].code;
     const c = document.getElementById('countries');
@@ -95,7 +97,11 @@ function out(msg) { document.getElementById('out').innerHTML = `<div class="empt
 async function load() {
   out('Chargement des articles…');
   try {
-    ARTS = await api(`media_public_live?select=id,published_at,outlet,url,title,section_code,section,summary,score,sorted_at,lang&country_code=eq.${encodeURIComponent(st.country)}&order=published_at.desc&limit=1000`);
+    SECTIONS = ALLSECTIONS.filter(x => x.country_code === st.country);
+    ARTS = await api(`media_public_live?select=id,published_at,outlet,url,title,section_code,section,summary,score,sorted_at,lang,model&country_code=eq.${encodeURIComponent(st.country)}&order=published_at.desc&limit=1000`);
+    const models = {}; ARTS.forEach(a => models[a.model] = (models[a.model] || 0) + 1);
+    const main = Object.keys(models).sort((x, y) => models[y] - models[x])[0];
+    document.getElementById('engine').textContent = modelName(main);
     const last = ARTS.reduce((m, a) => a.sorted_at > m ? a.sorted_at : m, '');
     document.getElementById('updated').textContent = last
       ? 'Dernier tri : ' + new Date(last).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
