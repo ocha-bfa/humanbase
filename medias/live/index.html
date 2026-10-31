@@ -59,30 +59,29 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
 <body>
 <header>
   <div class="wrap top">
-    <div class="brand"><small>OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b>Revue de presse triée par IA</b></div>
+    <div class="brand"><small data-t="kicker">OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b data-t="title">Revue de presse triée par IA</b></div>
     <div class="live"><span class="dot"></span><span id="updated">Chargement…</span></div>
   </div>
 </header>
 <div class="bar">
-  <b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA (<span id="engine">modèle en cours de chargement</span>), 3 fois par jour.
-  <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.
+  <span data-t="bar1"><b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA</span> (<span id="engine">…</span>)<span data-t="bar2">, 3 fois par jour. <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.</span>
 </div>
 <main class="wrap">
   <div class="controls" id="countries"></div>
-  <div class="viewsw" id="viewsw"><button class="chip on" data-v="news">Revue de presse</button><button class="chip" data-v="cfg">⚙ Configuration</button></div>
+  <div class="viewsw" id="viewsw"><button class="chip on" data-v="news" data-t="vNews">Revue de presse</button><button class="chip" data-v="cfg" data-t="vCfg">⚙ Configuration</button></div>
   <div class="controls" id="newsctl">
-    <button class="chip on" data-days="7">7 derniers jours</button>
-    <button class="chip" data-days="14">14 jours</button>
+    <button class="chip on" data-days="7" data-t="d7">7 derniers jours</button>
+    <button class="chip" data-days="14" data-t="d14">14 jours</button>
     <span class="sep"></span>
-    <input type="search" id="q" placeholder="Rechercher (titre, média, résumé)…">
+    <input type="search" id="q" placeholder="Rechercher (titre, média, résumé)…" data-tp="search">
   </div>
   <div class="controls" id="sections"></div>
   <div id="cfgout" hidden></div>
   <div id="out"><div class="empty">Chargement des articles…</div></div>
 </main>
 <footer>
-  Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>
-  Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).
+  <span data-t="foot">Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>
+  Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).</span>
 </footer>
 <script>
 const SB = 'https://vshnatreclfntadwcyhy.supabase.co';
@@ -90,24 +89,65 @@ const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const H = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 const api = p => fetch(SB + '/rest/v1/' + p, { headers: H }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+const fmt = d => new Date(d).toLocaleDateString(L === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short' });
 const st = { country: null, days: 7, section: null, q: '', view: 'news' };
-let COUNTRIES = [], CFG = null;
+let COUNTRIES = [], CFG = null, L = 'fr';
+const T = {
+ fr: { kicker:'OCHA · VEILLE MÉDIAS · DÉMO LIVE', title:'Revue de presse triée par IA',
+   bar1:'<b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA',
+   bar2:", 3 fois par jour. <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.",
+   vNews:'Revue de presse', vCfg:'⚙ Configuration', d7:'7 derniers jours', d14:'14 jours', search:'Rechercher (titre, média, résumé)…',
+   foot:"Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).",
+   loading:'Chargement des articles…', lastSort:'Dernier tri : ', waiting:'En attente du premier tri', all:'Toutes', top:'À ne pas manquer',
+   none:'Aucun article pour cette sélection.', err:'Erreur de chargement', inEn:'· en anglais', model:'modèle IA',
+   cfgLoading:'Chargement de la configuration…', cfgH:'Une application, une fiche de configuration par pays',
+   cfgLead:"Chaque pays (ou bureau) est une simple fiche : ses sources, ses rubriques, sa langue, son périmètre et son moteur d'IA. Le code, la base de données et la chaîne de traitement sont communs. Ajouter un pays ne demande aucun nouveau développement.",
+   s1:'<b>1 · Sources</b>Liste de sites (flux RSS) et de recherches Google Actualités.', s2:'<b>2 · Rubriques & langue</b>Les sections de la revue de presse et la langue des résumés.',
+   s3:"<b>3 · Périmètre</b>Quelques phrases : ce qui est pertinent ou non pour l'équipe.", s4:"<b>4 · Apprentissage</b>Les revues de presse déjà publiées par l'équipe servent d'exemples au moteur.",
+   plugged:"Les pays branchés aujourd'hui", rEngine:"Moteur d'IA", rLang:'Langue des résumés', rSec:'Rubriques', rSrc:'Sources suivies', rRef:"Exemples de l'équipe",
+   refTxt:(a,b)=>`${a} articles retenus dans ${b} revues publiées`, rSorted:'Articles triés à ce jour', rFreq:'Fréquence', freq:'3 fois par jour · ', rScope:'Périmètre', seeRules:'Voir les règles',
+   srcH:'Sources', thSrc:'Source', thType:'Type · langue', thAddr:'Adresse / mots-clés', thLast:'Dernière lecture', ok:'✓ lue', ko:'erreur', notYet:'pas encore lue',
+   ro:"Vue en lecture seule. Dans l'application de l'équipe, les sources s'ajoutent ou se désactivent en un clic.", cfgErr:'Configuration indisponible',
+   LANG:{ fr:'Français', en:'Anglais' }, KIND:{ rss:'Flux RSS', google_news:'Recherche Google Actualités' }, loc:'fr-FR' },
+ en: { kicker:'OCHA · MEDIA MONITORING · LIVE DEMO', title:'Press review sorted by AI',
+   bar1:'<b>Demo</b> — real press articles, collected automatically, then sorted and summarised by AI',
+   bar2:', three times a day. <b>Automatic sorting, not reviewed</b> by the team: mistakes are possible. Every link opens the original article.',
+   vNews:'Press review', vCfg:'⚙ Configuration', d7:'Last 7 days', d14:'14 days', search:'Search (title, outlet, summary)…',
+   foot:'Sources: national, regional and international media, public feeds. Summaries are generated automatically from the articles; only short extracts are shown.<br>Same application for every country: only the configuration changes (sources, sections, scope, engine). Data: HumanBase (OCHA Burkina Faso).',
+   loading:'Loading articles…', lastSort:'Last sorted: ', waiting:'Waiting for the first run', all:'All', top:'Must read',
+   none:'No articles for this selection.', err:'Loading error', inEn:'', model:'AI model',
+   cfgLoading:'Loading configuration…', cfgH:'One application, one configuration sheet per country',
+   cfgLead:'Each country (or office) is a simple sheet: its sources, sections, language, scope and AI engine. The code, database and processing pipeline are shared. Adding a country requires no new development.',
+   s1:'<b>1 · Sources</b>A list of websites (RSS feeds) and Google News searches.', s2:'<b>2 · Sections & language</b>The sections of the press review and the language of the summaries.',
+   s3:'<b>3 · Scope</b>A few sentences: what is relevant to the team and what is not.', s4:"<b>4 · Learning</b>The team's past published press reviews serve as examples for the engine.",
+   plugged:'Countries plugged in today', rEngine:'AI engine', rLang:'Summary language', rSec:'Sections', rSrc:'Sources monitored', rRef:"Team's examples",
+   refTxt:(a,b)=>`${a} articles selected in ${b} published reviews`, rSorted:'Articles sorted to date', rFreq:'Frequency', freq:'3 times a day · ', rScope:'Scope', seeRules:'See the rules',
+   srcH:'Sources', thSrc:'Source', thType:'Type · language', thAddr:'Address / keywords', thLast:'Last read', ok:'✓ read', ko:'error', notYet:'not read yet',
+   ro:"Read-only view. In the team's application, sources are added or switched off in one click.", cfgErr:'Configuration unavailable',
+   LANG:{ fr:'French', en:'English' }, KIND:{ rss:'RSS feed', google_news:'Google News search' }, loc:'en-GB' } };
+const t = k => T[L][k];
+function applyLang() {
+  document.documentElement.lang = L;
+  document.querySelectorAll('[data-t]').forEach(e => e.innerHTML = t(e.dataset.t));
+  document.querySelectorAll('[data-tp]').forEach(e => e.placeholder = t(e.dataset.tp));
+  document.title = L === 'en' ? 'Media monitoring — live demo' : 'Veille médias — démo live';
+}
+function setCountry(code) { st.country = code; const c = COUNTRIES.find(x => x.code === code); L = (c && c.ui_lang) || 'fr'; applyLang(); }
 let ARTS = [], SECTIONS = [], ALLSECTIONS = [];
 const MODEL_NAMES = { 'qwen/qwen3.8-27b': 'Qwen3.8 27B (open source, Alibaba)', 'anthropic/claude-haiku-5.5': 'Claude Haiku 5.5 (Anthropic)' };
-const modelName = m => { if (!m) return 'modèle IA'; const k = Object.keys(MODEL_NAMES).find(k => m.startsWith(k)); return k ? MODEL_NAMES[k] : m; };
+const modelName = m => { if (!m) return t('model'); const k = Object.keys(MODEL_NAMES).find(k => m.startsWith(k)); return k ? MODEL_NAMES[k] : m; };
 
 async function init() {
   try {
     const [countries, sections] = await Promise.all([
-      api('media_public_live_countries?select=code,name_fr&order=name_fr'),
+      api('media_public_live_countries?select=code,name_fr,ui_lang&order=name_fr'),
       api('media_public_sections?select=country_code,code,label,ordre&order=ordre')]);
     ALLSECTIONS = sections;
     if (!countries.length) { out('Aucun pays disponible pour le moment.'); return; }
-    COUNTRIES = countries; st.country = countries[0].code;
+    COUNTRIES = countries; setCountry(countries[0].code);
     const c = document.getElementById('countries');
     c.innerHTML = countries.map(x => `<button class="chip${x.code === st.country ? ' on' : ''}" data-c="${esc(x.code)}">${esc(x.name_fr)}</button>`).join('');
-    c.onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; st.country = b.dataset.c; st.section = null; mark(c, b); load(); };
+    c.onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; setCountry(b.dataset.c); st.section = null; mark(c, b); load(); };
     document.querySelectorAll('[data-days]').forEach(b => b.onclick = () => { st.days = +b.dataset.days; mark(b.parentElement, b, '[data-days]'); render(); });
     const vs = document.getElementById('viewsw');
     vs.onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; st.view = b.dataset.v; mark(vs, b); applyView(); };
@@ -125,14 +165,13 @@ function applyView() {
   if (cfg) renderCfg();
 }
 
-const LANG = { fr: 'Français', en: 'Anglais' };
-const KIND = { rss: 'Flux RSS', google_news: 'Recherche Google Actualités' };
-const fdt = d => d ? new Date(d).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-const nf = n => Number(n || 0).toLocaleString('fr-FR');
+const fdt = d => d ? new Date(d).toLocaleString(t('loc'), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+const nf = n => Number(n || 0).toLocaleString(t('loc'));
 
 async function renderCfg() {
   const box = document.getElementById('cfgout');
-  box.innerHTML = '<div class="empty">Chargement de la configuration…</div>';
+  box.innerHTML = `<div class="empty">${t('cfgLoading')}</div>`;
+    const LANG = t('LANG'), KIND = t('KIND');
   try {
     if (!CFG) CFG = await api('media_public_config?select=*');
     const src = await api(`media_public_sources?select=*&country_code=eq.${encodeURIComponent(st.country)}&order=kind,name`);
@@ -144,39 +183,34 @@ async function renderCfg() {
     const cur = cs.find(c => c.code === st.country) || cs[0];
     box.innerHTML = `
     <div class="cfg">
-      <h3>Une application, une fiche de configuration par pays</h3>
-      <p class="lead">Chaque pays (ou bureau) est une simple fiche : ses sources, ses rubriques, sa langue, son périmètre et son moteur d'IA. Le code, la base de données et la chaîne de traitement sont communs. Ajouter un pays ne demande aucun nouveau développement.</p>
-      <div class="steps">
-        <div><b>1 · Sources</b>Liste de sites (flux RSS) et de recherches Google Actualités.</div>
-        <div><b>2 · Rubriques & langue</b>Les sections de la revue de presse et la langue des résumés.</div>
-        <div><b>3 · Périmètre</b>Quelques phrases : ce qui est pertinent ou non pour l'équipe.</div>
-        <div><b>4 · Apprentissage</b>Les revues de presse déjà publiées par l'équipe servent d'exemples au moteur.</div>
-      </div>
+      <h3>${t('cfgH')}</h3>
+      <p class="lead">${t('cfgLead')}</p>
+      <div class="steps"><div>${t('s1')}</div><div>${t('s2')}</div><div>${t('s3')}</div><div>${t('s4')}</div></div>
     </div>
-    <h2>Les pays branchés aujourd'hui</h2>
+    <h2>${t('plugged')}</h2>
     <table class="cmp"><thead><tr><th></th>${cs.map(c => `<th>${esc(c.name_fr)}</th>`).join('')}</tr></thead><tbody>
-      ${row('Moteur d\'IA', c => esc(modelName(c.engine)))}
-      ${row('Langue des résumés', c => LANG[c.summary_lang] || esc(c.summary_lang))}
-      ${row('Rubriques', c => `<div class="secs">${secs(c.code)}</div><div style="color:var(--mut);font-size:12px;margin-top:4px">${secNames(c.code)}</div>`)}
-      ${row('Sources suivies', c => nf(c.n_sources))}
-      ${row('Exemples de l\'équipe', c => c.n_reference ? `${nf(c.n_reference)} articles retenus dans ${nf(c.n_reference_digests)} revues publiées` : '—')}
-      ${row('Articles triés à ce jour', c => nf(c.n_sorted))}
-      ${row('Fréquence', c => '3 fois par jour · ' + esc(c.schedule))}
-      ${row('Périmètre', c => `<details><summary>Voir les règles</summary><div>${esc(c.scope_rules || '')}</div></details>`)}
+      ${row(t('rEngine'), c => esc(modelName(c.engine)))}
+      ${row(t('rLang'), c => LANG[c.summary_lang] || esc(c.summary_lang))}
+      ${row(t('rSec'), c => `<div class="secs">${secs(c.code)}</div><div style="color:var(--mut);font-size:12px;margin-top:4px">${secNames(c.code)}</div>`)}
+      ${row(t('rSrc'), c => nf(c.n_sources))}
+      ${row(t('rRef'), c => c.n_reference ? t('refTxt')(nf(c.n_reference), nf(c.n_reference_digests)) : '—')}
+      ${row(t('rSorted'), c => nf(c.n_sorted))}
+      ${row(t('rFreq'), c => t('freq') + esc(c.schedule))}
+      ${row(t('rScope'), c => `<details><summary>${t('seeRules')}</summary><div>${esc(c.scope_rules || '')}</div></details>`)}
     </tbody></table>
-    <h2>Sources — ${esc(cur ? cur.name_fr : '')} <span class="n">· ${src.length}</span></h2>
-    <table class="src"><thead><tr><th>Source</th><th>Type · langue</th><th>Adresse / mots-clés</th><th>Dernière lecture</th></tr></thead><tbody>
+    <h2>${t('srcH')} — ${esc(cur ? cur.name_fr : '')} <span class="n">· ${src.length}</span></h2>
+    <table class="src"><thead><tr><th>${t('thSrc')}</th><th>${t('thType')}</th><th>${t('thAddr')}</th><th>${t('thLast')}</th></tr></thead><tbody>
       ${src.map(x => `<tr><td><b>${esc(x.name)}</b></td><td>${KIND[x.kind] || esc(x.kind)}<br><span style="color:var(--mut)">${LANG[x.lang] || esc(x.lang || '')}</span></td>
         <td class="q">${esc(x.target || '')}</td>
-        <td>${x.status === 'ok' ? '<span class="ok">✓ lue</span>' : x.status === 'error' ? '<span class="ko">erreur</span>' : '<span style="color:var(--mut)">pas encore lue</span>'}<br><span style="color:var(--mut);font-size:12px">${fdt(x.last_fetch_at)}</span></td></tr>`).join('')}
+        <td>${x.status === 'ok' ? `<span class="ok">${t('ok')}</span>` : x.status === 'error' ? `<span class="ko">${t('ko')}</span>` : `<span style="color:var(--mut)">${t('notYet')}</span>`}<br><span style="color:var(--mut);font-size:12px">${fdt(x.last_fetch_at)}</span></td></tr>`).join('')}
     </tbody></table>
-    <p style="color:var(--mut);font-size:12px">Vue en lecture seule. Dans l'application de l'équipe, les sources s'ajoutent ou se désactivent en un clic.</p>`;
-  } catch (e) { box.innerHTML = `<div class="empty">Configuration indisponible (${esc(e.message)}).</div>`; }
+    <p style="color:var(--mut);font-size:12px">${t('ro')}</p>`;
+  } catch (e) { box.innerHTML = `<div class="empty">${t('cfgErr')} (${esc(e.message)}).</div>`; }
 }
 
 async function load() {
   if (st.view === 'cfg') renderCfg();
-  out('Chargement des articles…');
+  out(t('loading'));
   try {
     SECTIONS = ALLSECTIONS.filter(x => x.country_code === st.country);
     ARTS = await api(`media_public_live?select=id,published_at,outlet,url,title,section_code,section,summary,score,sorted_at,lang,model&country_code=eq.${encodeURIComponent(st.country)}&order=published_at.desc&limit=1000`);
@@ -185,10 +219,10 @@ async function load() {
     document.getElementById('engine').textContent = modelName(main);
     const last = ARTS.reduce((m, a) => a.sorted_at > m ? a.sorted_at : m, '');
     document.getElementById('updated').textContent = last
-      ? 'Dernier tri : ' + new Date(last).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-      : 'En attente du premier tri';
+      ? t('lastSort') + new Date(last).toLocaleString(t('loc'), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      : t('waiting');
     render();
-  } catch (e) { out('Erreur de chargement (' + esc(e.message) + ').'); }
+  } catch (e) { out(t('err') + ' (' + esc(e.message) + ').'); }
 }
 
 function render() {
@@ -197,15 +231,15 @@ function render() {
   if (st.q) list = list.filter(a => (a.title + ' ' + a.outlet + ' ' + (a.summary || '')).toLowerCase().includes(st.q));
   const counts = {}; list.forEach(a => counts[a.section_code] = (counts[a.section_code] || 0) + 1);
   const s = document.getElementById('sections');
-  s.innerHTML = `<button class="chip${!st.section ? ' on' : ''}" data-s="">Toutes<span class="n">${list.length}</span></button>` +
+  s.innerHTML = `<button class="chip${!st.section ? ' on' : ''}" data-s="">${t('all')}<span class="n">${list.length}</span></button>` +
     SECTIONS.filter(x => counts[x.code]).map(x => `<button class="chip${st.section === x.code ? ' on' : ''}" data-s="${esc(x.code)}">${esc(x.label)}<span class="n">${counts[x.code]}</span></button>`).join('');
   s.onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; st.section = b.dataset.s || null; render(); };
   if (st.section) list = list.filter(a => a.section_code === st.section);
-  if (!list.length) { out('Aucun article pour cette sélection.'); return; }
+  if (!list.length) { out(t('none')); return; }
 
   const top = [...list].sort((a, b) => b.score - a.score).slice(0, 5);
   const topIds = new Set(top.map(a => a.id));
-  let html = `<h2>À ne pas manquer <span class="n">· ${top.length}</span></h2>` + top.map(a => card(a, true)).join('');
+  let html = `<h2>${t('top')} <span class="n">· ${top.length}</span></h2>` + top.map(a => card(a, true)).join('');
   const groups = SECTIONS.map(x => ({ x, items: list.filter(a => a.section_code === x.code && !topIds.has(a.id)) })).filter(g => g.items.length);
   for (const g of groups) html += `<h2>${esc(g.x.label)} <span class="n">· ${g.items.length}</span></h2>` + g.items.map(a => card(a)).join('');
   document.getElementById('out').innerHTML = html;
@@ -214,7 +248,7 @@ function render() {
 function card(a, isTop) {
   const href = /^https?:\/\//.test(a.url) ? a.url : '#';
   return `<div class="card${isTop ? ' hl' : ''}">
-    <div class="meta"><span class="tag">${esc(a.section_code || '')}</span><span>${esc(a.outlet)}</span><span>· ${fmt(a.published_at)}</span>${a.lang === 'en' ? '<span>· en anglais</span>' : ''}</div>
+    <div class="meta"><span class="tag">${esc(a.section_code || '')}</span><span>${esc(a.outlet)}</span><span>· ${fmt(a.published_at)}</span>${a.lang === 'en' && t('inEn') ? '<span>' + t('inEn') + '</span>' : ''}</div>
     <a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>
     ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
   </div>`;
