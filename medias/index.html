@@ -403,7 +403,7 @@ function exportCsv(ws, groups) {
 
 // ---------- Sources ----------
 async function renderSrc() {
-  SOURCES = await api('media_sources?select=*&country_code=eq.BFA&order=active.desc,name');
+  SOURCES = await api('media_sources?select=*&country_code=eq.BFA&pi_feed=eq.true&order=active.desc,name');
   const row = s => `<tr data-id="${s.id}">
     <td><b>${esc(s.name)}</b><br><span style="color:var(--mut);font-size:12px">${s.kind === 'rss' ? 'Flux RSS' : 'Google Actualités'} · ${esc(s.lang || 'fr')}</span></td>
     <td class="q">${esc(s.kind === 'rss' ? s.url : s.query)}</td>
