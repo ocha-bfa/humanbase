@@ -4,256 +4,74 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Veille médias — démo live</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--blue:#026CB6;--blue-50:#E8F1F9;--ink:#0F1923;--mut:#4A6070;--line:#E2E8F0;--bg:#F7F9FC;--warn-bg:#FFF4DC;--warn:#5C3D00}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 'DM Sans','Segoe UI',sans-serif}
-header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
-.wrap{max-width:1000px;margin:0 auto;padding:0 16px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;flex-wrap:wrap}
-.brand small{display:block;color:var(--blue);font-weight:600;letter-spacing:.04em;font-size:11px}
-.brand b{font-size:18px}
-.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mut)}
-.dot{width:8px;height:8px;border-radius:50%;background:#2E7D32;box-shadow:0 0 0 3px #E8F5E9}
-.bar{background:var(--warn-bg);color:var(--warn);border-bottom:1px solid #F0D9A8;font-size:13px;padding:8px 16px;text-align:center}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0 12px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 12px;cursor:pointer;font:inherit;font-size:13px;color:var(--mut)}
-.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.chip .n{opacity:.75;margin-left:4px}
-input[type=search]{font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:200px;flex:1;max-width:320px}
-.sep{width:1px;height:22px;background:var(--line);margin:0 4px}
-h2{font-size:15px;margin:22px 0 10px;color:var(--ink)}
-h2 .n{color:var(--mut);font-weight:400}
-.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px}
-.card.hl{border-left:4px solid #C9A55A}
-.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;color:var(--mut);margin-bottom:4px}
-.tag{background:var(--blue-50);color:var(--blue);border-radius:10px;padding:1px 8px;font-weight:600;font-size:11px}
-.card a{color:var(--ink);font-weight:600;text-decoration:none;font-size:15px}
-.card a:hover{color:var(--blue);text-decoration:underline}
-.card p{margin:6px 0 0;color:#2B3A47}
-.empty{color:var(--mut);padding:30px 0;text-align:center}
-.viewsw{display:flex;gap:6px;padding:10px 0 0}
-.viewsw .chip{font-weight:600}
-.cfg{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
-.cfg h3{margin:0 0 8px;font-size:15px}
-.cfg p.lead{margin:0;color:#2B3A47}
-.steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-.steps div{flex:1;min-width:170px;background:var(--blue-50);border-radius:8px;padding:8px 10px;font-size:13px}
-.steps b{color:var(--blue);display:block}
-table.cmp,table.src{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
-table.cmp th,table.cmp td,table.src th,table.src td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-table.cmp th{background:var(--blue-50);color:var(--blue)}
-table.cmp td:first-child{color:var(--mut);width:180px}
-table.src th{background:#F1F5F9;color:var(--mut);font-weight:600}
-table.src td.q{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#2B3A47;word-break:break-all}
-.ok{color:#2E7D32;font-weight:600}.ko{color:#B3261E;font-weight:600}
-.secs{display:flex;flex-wrap:wrap;gap:4px}
-details summary{cursor:pointer;color:var(--blue)}
-details div{margin-top:6px;color:#2B3A47;white-space:pre-wrap}
-footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
-</style>
 </head>
-<body>
-<header>
-  <div class="wrap top">
-    <div class="brand"><small data-t="kicker">OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b data-t="title">Revue de presse triée par IA</b></div>
-    <div class="live"><span class="dot"></span><span id="updated">Chargement…</span></div>
-  </div>
-</header>
-<div class="bar">
-  <span data-t="bar1"><b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA</span> (<span id="engine">…</span>)<span data-t="bar2">, 3 fois par jour. <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.</span>
-</div>
-<main class="wrap">
-  <div class="controls" id="countries"></div>
-  <div class="viewsw" id="viewsw"><button class="chip on" data-v="news" data-t="vNews">Revue de presse</button><button class="chip" data-v="cfg" data-t="vCfg">⚙ Configuration</button></div>
-  <div class="controls" id="newsctl">
-    <button class="chip on" data-days="7" data-t="d7">7 derniers jours</button>
-    <button class="chip" data-days="14" data-t="d14">14 jours</button>
-    <span class="sep"></span>
-    <input type="search" id="q" placeholder="Rechercher (titre, média, résumé)…" data-tp="search">
-  </div>
-  <div class="controls" id="sections"></div>
-  <div id="cfgout" hidden></div>
-  <div id="out"><div class="empty">Chargement des articles…</div></div>
-</main>
-<footer>
-  <span data-t="foot">Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>
-  Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).</span>
-</footer>
+<body style="font:14px 'Segoe UI',sans-serif;color:#4A6070;text-align:center;padding:60px">
+Chargement de la démonstration… / Loading the demo…
 <script>
-const SB = 'https://vshnatreclfntadwcyhy.supabase.co';
-const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzaG5hdHJlY2xmbnRhZHdjeWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTA4NzcsImV4cCI6MjA4OTg2Njg3N30.VOxHkUKvYKtsdc2iwmsDMP9w-BWh3LZ4ZFLD4-qzjd8';
-const H = { apikey: ANON, Authorization: 'Bearer ' + ANON };
-const api = p => fetch(SB + '/rest/v1/' + p, { headers: H }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const fmt = d => new Date(d).toLocaleDateString(L === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short' });
-const st = { country: null, days: 7, section: null, q: '', view: 'news' };
-let COUNTRIES = [], CFG = null, L = 'fr';
-const T = {
- fr: { kicker:'OCHA · VEILLE MÉDIAS · DÉMO LIVE', title:'Revue de presse triée par IA',
-   bar1:'<b>Démonstration</b> — articles de presse réels, collectés automatiquement puis triés et résumés par une IA',
-   bar2:", 3 fois par jour. <b>Tri automatique, non relu</b> par l'équipe : des erreurs sont possibles. Chaque lien renvoie à l'article original.",
-   vNews:'Revue de presse', vCfg:'⚙ Configuration', d7:'7 derniers jours', d14:'14 jours', search:'Rechercher (titre, média, résumé)…',
-   foot:"Sources : médias nationaux, régionaux et internationaux, flux publics. Résumés générés automatiquement à partir des articles ; seuls des extraits courts sont affichés.<br>Même application pour chaque pays : seule la configuration change (sources, rubriques, périmètre, moteur). Données : HumanBase (OCHA Burkina Faso).",
-   loading:'Chargement des articles…', lastSort:'Dernier tri : ', waiting:'En attente du premier tri', all:'Toutes', top:'À ne pas manquer',
-   none:'Aucun article pour cette sélection.', err:'Erreur de chargement', inEn:'· en anglais', model:'modèle IA',
-   cfgLoading:'Chargement de la configuration…', cfgH:'Une application, une fiche de configuration par pays',
-   cfgLead:"Chaque pays (ou bureau) est une simple fiche : ses sources, ses rubriques, sa langue, son périmètre et son moteur d'IA. Le code, la base de données et la chaîne de traitement sont communs. Ajouter un pays ne demande aucun nouveau développement.",
-   s1:'<b>1 · Sources</b>Liste de sites (flux RSS) et de recherches Google Actualités.', s2:'<b>2 · Rubriques & langue</b>Les sections de la revue de presse et la langue des résumés.',
-   s3:"<b>3 · Périmètre</b>Quelques phrases : ce qui est pertinent ou non pour l'équipe.", s4:"<b>4 · Apprentissage</b>Les revues de presse déjà publiées par l'équipe servent d'exemples au moteur.",
-   plugged:"Les pays branchés aujourd'hui", rEngine:"Moteur d'IA", rLang:'Langue des résumés', rSec:'Rubriques', rSrc:'Sources suivies', rRef:"Exemples de l'équipe",
-   refTxt:(a,b)=>`${a} articles retenus dans ${b} revues publiées`, rSorted:'Articles triés à ce jour', rFreq:'Fréquence', freq:'3 fois par jour · ', rScope:'Périmètre', seeRules:'Voir les règles',
-   srcH:'Sources', thSrc:'Source', thType:'Type · langue', thAddr:'Adresse / mots-clés', thLast:'Dernière lecture', ok:'✓ lue', ko:'erreur', notYet:'pas encore lue',
-   ro:"Vue en lecture seule. Dans l'application de l'équipe, les sources s'ajoutent ou se désactivent en un clic.", cfgErr:'Configuration indisponible',
-   LANG:{ fr:'Français', en:'Anglais' }, KIND:{ rss:'Flux RSS', google_news:'Recherche Google Actualités' }, loc:'fr-FR' },
- en: { kicker:'OCHA · MEDIA MONITORING · LIVE DEMO', title:'Press review sorted by AI',
-   bar1:'<b>Demo</b> — real press articles, collected automatically, then sorted and summarised by AI',
-   bar2:', three times a day. <b>Automatic sorting, not reviewed</b> by the team: mistakes are possible. Every link opens the original article.',
-   vNews:'Press review', vCfg:'⚙ Configuration', d7:'Last 7 days', d14:'14 days', search:'Search (title, outlet, summary)…',
-   foot:'Sources: national, regional and international media, public feeds. Summaries are generated automatically from the articles; only short extracts are shown.<br>Same application for every country: only the configuration changes (sources, sections, scope, engine). Data: HumanBase (OCHA Burkina Faso).',
-   loading:'Loading articles…', lastSort:'Last sorted: ', waiting:'Waiting for the first run', all:'All', top:'Must read',
-   none:'No articles for this selection.', err:'Loading error', inEn:'', model:'AI model',
-   cfgLoading:'Loading configuration…', cfgH:'One application, one configuration sheet per country',
-   cfgLead:'Each country (or office) is a simple sheet: its sources, sections, language, scope and AI engine. The code, database and processing pipeline are shared. Adding a country requires no new development.',
-   s1:'<b>1 · Sources</b>A list of websites (RSS feeds) and Google News searches.', s2:'<b>2 · Sections & language</b>The sections of the press review and the language of the summaries.',
-   s3:'<b>3 · Scope</b>A few sentences: what is relevant to the team and what is not.', s4:"<b>4 · Learning</b>The team's past published press reviews serve as examples for the engine.",
-   plugged:'Countries plugged in today', rEngine:'AI engine', rLang:'Summary language', rSec:'Sections', rSrc:'Sources monitored', rRef:"Team's examples",
-   refTxt:(a,b)=>`${a} articles selected in ${b} published reviews`, rSorted:'Articles sorted to date', rFreq:'Frequency', freq:'3 times a day · ', rScope:'Scope', seeRules:'See the rules',
-   srcH:'Sources', thSrc:'Source', thType:'Type · language', thAddr:'Address / keywords', thLast:'Last read', ok:'✓ read', ko:'error', notYet:'not read yet',
-   ro:"Read-only view. In the team's application, sources are added or switched off in one click.", cfgErr:'Configuration unavailable',
-   LANG:{ fr:'French', en:'English' }, KIND:{ rss:'RSS feed', google_news:'Google News search' }, loc:'en-GB' } };
-const t = k => T[L][k];
-function applyLang() {
-  document.documentElement.lang = L;
-  document.querySelectorAll('[data-t]').forEach(e => e.innerHTML = t(e.dataset.t));
-  document.querySelectorAll('[data-tp]').forEach(e => e.placeholder = t(e.dataset.tp));
-  document.title = L === 'en' ? 'Media monitoring — live demo' : 'Veille médias — démo live';
-}
-function setCountry(code) { st.country = code; const c = COUNTRIES.find(x => x.code === code); L = (c && c.ui_lang) || 'fr'; applyLang(); }
-let ARTS = [], SECTIONS = [], ALLSECTIONS = [];
-const MODEL_NAMES = { 'qwen/qwen3.8-27b': 'Qwen3.8 27B (open source, Alibaba)', 'anthropic/claude-haiku-5.5': 'Claude Haiku 5.5 (Anthropic)' };
-const modelName = m => { if (!m) return t('model'); const k = Object.keys(MODEL_NAMES).find(k => m.startsWith(k)); return k ? MODEL_NAMES[k] : m; };
-
-async function init() {
+// Démo LIVE : on charge la VRAIE application ../index.html (toujours à jour) et on remplace seulement
+// la connexion (auth.js) et la base de données par live.js : articles du jour triés par l'IA, en lecture seule ;
+// les actions du visiteur restent dans son navigateur. Un pays = une configuration (sources, rubriques, langue, moteur).
+(async () => {
+  const SB = 'https://vshnatreclfntadwcyhy.supabase.co';
+  const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzaG5hdHJlY2xmbnRhZHdjeWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyOTA4NzcsImV4cCI6MjA4OTg2Njg3N30.VOxHkUKvYKtsdc2iwmsDMP9w-BWh3LZ4ZFLD4-qzjd8';
+  const get = p => fetch(SB + '/rest/v1/' + p, { headers: { apikey: ANON, Authorization: 'Bearer ' + ANON } }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   try {
-    const [countries, sections] = await Promise.all([
-      api('media_public_live_countries?select=code,name_fr,ui_lang&order=name_fr'),
-      api('media_public_sections?select=country_code,code,label,ordre&order=ordre')]);
-    ALLSECTIONS = sections;
-    if (!countries.length) { out('Aucun pays disponible pour le moment.'); return; }
-    COUNTRIES = countries; setCountry(countries[0].code);
-    const c = document.getElementById('countries');
-    c.innerHTML = countries.map(x => `<button class="chip${x.code === st.country ? ' on' : ''}" data-c="${esc(x.code)}">${esc(x.name_fr)}</button>`).join('');
-    c.onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; setCountry(b.dataset.c); st.section = null; mark(c, b); load(); };
-    document.querySelectorAll('[data-days]').forEach(b => b.onclick = () => { st.days = +b.dataset.days; mark(b.parentElement, b, '[data-days]'); render(); });
-    const vs = document.getElementById('viewsw');
-    vs.onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; st.view = b.dataset.v; mark(vs, b); applyView(); };
-    document.getElementById('q').oninput = e => { st.q = e.target.value.trim().toLowerCase(); render(); };
-    load();
-  } catch (e) { out('La démonstration n’a pas pu se charger (' + esc(e.message) + ').'); }
-}
-function mark(parent, btn, sel = '.chip') { parent.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === btn)); }
-function out(msg) { document.getElementById('out').innerHTML = `<div class="empty">${msg}</div>`; }
+    const [countries, sections, page] = await Promise.all([
+      get('media_public_live_countries?select=code,name_fr,ui_lang&order=name_fr'),
+      get('media_public_sections?select=country_code,code,label,ordre&order=ordre'),
+      fetch('../index.html', { cache: 'no-cache' }).then(r => r.text())]);
+    if (!countries.length) throw new Error('aucun pays disponible / no country available');
+    let code = new URLSearchParams(location.search).get('c');
+    if (!code) { try { code = localStorage.getItem('mm_live_country'); } catch (e) {} }
+    const country = countries.find(c => c.code === code) || countries[0];
+    try { localStorage.setItem('mm_live_country', country.code); } catch (e) {}
+    const EN = country.ui_lang === 'en';
+    const name = country.name_fr, office = country.code === 'BFA' ? 'OCHA Burkina Faso' : name;
+    const secs = sections.filter(s => s.country_code === country.code).map(s => [s.code, s.label]);
+    const pairs = EN ? await fetch('../demo/en.json', { cache: 'no-cache' }).then(r => r.json()) : [];
 
-function applyView() {
-  const cfg = st.view === 'cfg';
-  ['newsctl', 'sections', 'out'].forEach(id => document.getElementById(id).hidden = cfg);
-  document.getElementById('cfgout').hidden = !cfg;
-  if (cfg) renderCfg();
-}
+    const inline = '<script>window.LIVE_COUNTRY=' + JSON.stringify(country.code) + ';window.LIVE_LANG=' + JSON.stringify(EN ? 'en' : 'fr') +
+      ';window.LIVE_SECTIONS=' + JSON.stringify(secs).replace(/<\//g, '<\\/') + ';window.LIVE_COUNTRIES=' + JSON.stringify(countries).replace(/<\//g, '<\\/') +
+      ';window.LIVE_ALLSECTIONS=' + JSON.stringify(sections).replace(/<\//g, '<\\/') + ';<\/script>';
+    const btn = "display:inline-block;white-space:nowrap;border:1px solid #C9A55A;background:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font:inherit;color:inherit;line-height:1.45;text-decoration:none";
+    const sw = countries.map(c => `<button onclick="LIVE_SWITCH('${esc(c.code)}')" style="${btn};${c.code === country.code ? 'background:#5C3D00;color:#fff;border-color:#5C3D00' : ''}">${esc(c.name_fr)}</button>`).join(' ');
+    const bar = EN
+      ? `<b>Live demo</b> — real articles, collected automatically and sorted today by AI (<span id="liveEngine">…</span>; last run <span id="liveLast">…</span>), three times a day.
+         Try everything: Retain / Discard, sections, summaries, order, Word / CSV export, sources. Your choices stay <b>in your browser</b> only.
+         <span style="white-space:nowrap;margin-left:6px">${sw} <button onclick="LIVE_RESET()" style="${btn};margin-left:4px">↺ Reset</button></span>`
+      : `<b>Démo live</b> — articles réels, collectés automatiquement et triés aujourd'hui par l'IA (<span id="liveEngine">…</span> ; dernier tri <span id="liveLast">…</span>), 3 fois par jour.
+         Essayez tout : Retenu / Écarté, rubriques, résumés, ordre, export Word / CSV, sources. Vos choix restent <b>dans votre navigateur</b> uniquement.
+         <span style="white-space:nowrap;margin-left:6px">${sw} <button onclick="LIVE_RESET()" style="${btn};margin-left:4px">↺ Réinitialiser</button></span>`;
 
-const fdt = d => d ? new Date(d).toLocaleString(t('loc'), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-const nf = n => Number(n || 0).toLocaleString(t('loc'));
-
-async function renderCfg() {
-  const box = document.getElementById('cfgout');
-  box.innerHTML = `<div class="empty">${t('cfgLoading')}</div>`;
-    const LANG = t('LANG'), KIND = t('KIND');
-  try {
-    if (!CFG) CFG = await api('media_public_config?select=*');
-    const src = await api(`media_public_sources?select=*&country_code=eq.${encodeURIComponent(st.country)}&order=kind,name`);
-    const order = COUNTRIES.map(c => c.code);
-    const cs = [...CFG].sort((a, b) => order.indexOf(a.code) - order.indexOf(b.code));
-    const secs = code => ALLSECTIONS.filter(x => x.country_code === code).map(x => `<span class="tag" title="${esc(x.label)}">${esc(x.code)}</span>`).join(' ');
-    const secNames = code => ALLSECTIONS.filter(x => x.country_code === code).map(x => esc(x.label)).join(' · ');
-    const row = (label, f) => `<tr><td>${label}</td>${cs.map(c => `<td>${f(c)}</td>`).join('')}</tr>`;
-    const cur = cs.find(c => c.code === st.country) || cs[0];
-    box.innerHTML = `
-    <div class="cfg">
-      <h3>${t('cfgH')}</h3>
-      <p class="lead">${t('cfgLead')}</p>
-      <div class="steps"><div>${t('s1')}</div><div>${t('s2')}</div><div>${t('s3')}</div><div>${t('s4')}</div></div>
-    </div>
-    <h2>${t('plugged')}</h2>
-    <table class="cmp"><thead><tr><th></th>${cs.map(c => `<th>${esc(c.name_fr)}</th>`).join('')}</tr></thead><tbody>
-      ${row(t('rEngine'), c => esc(modelName(c.engine)))}
-      ${row(t('rLang'), c => LANG[c.summary_lang] || esc(c.summary_lang))}
-      ${row(t('rSec'), c => `<div class="secs">${secs(c.code)}</div><div style="color:var(--mut);font-size:12px;margin-top:4px">${secNames(c.code)}</div>`)}
-      ${row(t('rSrc'), c => nf(c.n_sources))}
-      ${row(t('rRef'), c => c.n_reference ? t('refTxt')(nf(c.n_reference), nf(c.n_reference_digests)) : '—')}
-      ${row(t('rSorted'), c => nf(c.n_sorted))}
-      ${row(t('rFreq'), c => t('freq') + esc(c.schedule))}
-      ${row(t('rScope'), c => `<details><summary>${t('seeRules')}</summary><div>${esc(c.scope_rules || '')}</div></details>`)}
-    </tbody></table>
-    <h2>${t('srcH')} — ${esc(cur ? cur.name_fr : '')} <span class="n">· ${src.length}</span></h2>
-    <table class="src"><thead><tr><th>${t('thSrc')}</th><th>${t('thType')}</th><th>${t('thAddr')}</th><th>${t('thLast')}</th></tr></thead><tbody>
-      ${src.map(x => `<tr><td><b>${esc(x.name)}</b></td><td>${KIND[x.kind] || esc(x.kind)}<br><span style="color:var(--mut)">${LANG[x.lang] || esc(x.lang || '')}</span></td>
-        <td class="q">${esc(x.target || '')}</td>
-        <td>${x.status === 'ok' ? `<span class="ok">${t('ok')}</span>` : x.status === 'error' ? `<span class="ko">${t('ko')}</span>` : `<span style="color:var(--mut)">${t('notYet')}</span>`}<br><span style="color:var(--mut);font-size:12px">${fdt(x.last_fetch_at)}</span></td></tr>`).join('')}
-    </tbody></table>
-    <p style="color:var(--mut);font-size:12px">${t('ro')}</p>`;
-  } catch (e) { box.innerHTML = `<div class="empty">${t('cfgErr')} (${esc(e.message)}).</div>`; }
-}
-
-async function load() {
-  if (st.view === 'cfg') renderCfg();
-  out(t('loading'));
-  try {
-    SECTIONS = ALLSECTIONS.filter(x => x.country_code === st.country);
-    ARTS = await api(`media_public_live?select=id,published_at,outlet,url,title,section_code,section,summary,score,sorted_at,lang,model&country_code=eq.${encodeURIComponent(st.country)}&order=published_at.desc&limit=1000`);
-    const models = {}; ARTS.forEach(a => models[a.model] = (models[a.model] || 0) + 1);
-    const main = Object.keys(models).sort((x, y) => models[y] - models[x])[0];
-    document.getElementById('engine').textContent = modelName(main);
-    const last = ARTS.reduce((m, a) => a.sorted_at > m ? a.sorted_at : m, '');
-    document.getElementById('updated').textContent = last
-      ? t('lastSort') + new Date(last).toLocaleString(t('loc'), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-      : t('waiting');
-    render();
-  } catch (e) { out(t('err') + ' (' + esc(e.message) + ').'); }
-}
-
-function render() {
-  const since = Date.now() - st.days * 864e5;
-  let list = ARTS.filter(a => new Date(a.published_at) >= since);
-  if (st.q) list = list.filter(a => (a.title + ' ' + a.outlet + ' ' + (a.summary || '')).toLowerCase().includes(st.q));
-  const counts = {}; list.forEach(a => counts[a.section_code] = (counts[a.section_code] || 0) + 1);
-  const s = document.getElementById('sections');
-  s.innerHTML = `<button class="chip${!st.section ? ' on' : ''}" data-s="">${t('all')}<span class="n">${list.length}</span></button>` +
-    SECTIONS.filter(x => counts[x.code]).map(x => `<button class="chip${st.section === x.code ? ' on' : ''}" data-s="${esc(x.code)}">${esc(x.label)}<span class="n">${counts[x.code]}</span></button>`).join('');
-  s.onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; st.section = b.dataset.s || null; render(); };
-  if (st.section) list = list.filter(a => a.section_code === st.section);
-  if (!list.length) { out(t('none')); return; }
-
-  const top = [...list].sort((a, b) => b.score - a.score).slice(0, 5);
-  const topIds = new Set(top.map(a => a.id));
-  let html = `<h2>${t('top')} <span class="n">· ${top.length}</span></h2>` + top.map(a => card(a, true)).join('');
-  const groups = SECTIONS.map(x => ({ x, items: list.filter(a => a.section_code === x.code && !topIds.has(a.id)) })).filter(g => g.items.length);
-  for (const g of groups) html += `<h2>${esc(g.x.label)} <span class="n">· ${g.items.length}</span></h2>` + g.items.map(a => card(a)).join('');
-  document.getElementById('out').innerHTML = html;
-}
-
-function card(a, isTop) {
-  const href = /^https?:\/\//.test(a.url) ? a.url : '#';
-  return `<div class="card${isTop ? ' hl' : ''}">
-    <div class="meta"><span class="tag">${esc(a.section_code || '')}</span><span>${esc(a.outlet)}</span><span>· ${fmt(a.published_at)}</span>${a.lang === 'en' && t('inEn') ? '<span>' + t('inEn') + '</span>' : ''}</div>
-    <a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(a.title)}</a>
-    ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
-  </div>`;
-}
-init();
+    let h = page;
+    const swaps = [
+      ['<script src="../auth.js"><\/script>', () => inline + '<script src="live.js?v=' + Date.now() + '"><\/script>'],
+      ['async function api(', 'async function api_reel('],
+      [/const SECTIONS = \[[\s\S]*?\n\];/, 'const SECTIONS = window.LIVE_SECTIONS;'],
+      ["(a.section || 'NAT')", '(a.section || SECTIONS[0][0])', true],
+      ['const inDays = a => a.week_start === CUR_WEEK;', 'const inDays = a => new Date(a.published_at) > Date.now() - 7 * 864e5;'],
+      ['Semaine ${esc(weekLabel(CUR_WEEK))}', EN ? 'Last 7 days' : '7 derniers jours'],
+      ["'Monitoring_medias_OCHA_BFA_semaine_'", JSON.stringify((EN ? 'Media_monitoring_' : 'Monitoring_medias_') + office.replace(/\W+/g, '_') + (EN ? '_week_' : '_semaine_'))],
+      ["'OCHA Burkina Faso — semaine ' + weekLabel", JSON.stringify(office + (EN ? ' — week ' : ' — semaine ')) + ' + weekLabel'],
+      ['<title>Monitoring médias — OCHA Burkina Faso</title>', `<title>${EN ? 'Live demo — Media monitoring' : 'Démo live — Monitoring médias'} — ${esc(name)}</title>`],
+      ['<small>OCHA BURKINA FASO</small>', `<small>${esc(office.toUpperCase())} · ${EN ? 'LIVE DEMO' : 'DÉMO LIVE'}</small>`],
+      ['<button data-v="src">Sources</button>', '<button data-v="src">Sources</button><button data-v="cfg">⚙ Configuration</button>'],
+      ["if (v === 'tri') renderTri();", "if (v === 'cfg') { window.LIVE_CFG(); return; } if (v === 'tri') renderTri();"],
+      ["'mm_view'", "'mm_live_view'", true],
+      ['<body>', () => `<body><div id="demoBar" style="background:#FFF4DC;color:#5C3D00;border-bottom:1px solid #F0D9A8;font:13px/1.6 'DM Sans','Segoe UI',sans-serif;padding:8px 16px;text-align:center">${bar}</div>`],
+    ];
+    for (const [a, b, all] of swaps) {
+      const found = a instanceof RegExp ? a.test(h) : h.includes(a);
+      if (!found) throw new Error('application principale modifiée / main app changed (« ' + String(a).slice(0, 40) + ' »)');
+      if (all) h = h.split(a).join(b); else h = h.replace(a, b);
+    }
+    for (const [fr, en] of pairs) h = h.split(fr).join(en);
+    document.open(); document.write(h); document.close();
+  } catch (e) {
+    document.body.textContent = 'La démonstration n’a pas pu se charger / The demo could not load: ' + e.message;
+  }
+})();
 </script>
 </body>
 </html>
