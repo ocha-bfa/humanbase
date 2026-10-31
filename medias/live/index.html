@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Veille médias — démo live (IA open source)</title>
+<title>Veille médias — démo live</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--blue:#026CB6;--blue-50:#E8F1F9;--ink:#0F1923;--mut:#4A6070;--line:#E2E8F0;--bg:#F7F9FC;--warn-bg:#FFF4DC;--warn:#5C3D00}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 'DM Sans','Segoe UI',sans-serif}
 header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
 .wrap{max-width:1000px;margin:0 auto;padding:0 16px}
@@ -34,13 +35,31 @@ h2 .n{color:var(--mut);font-weight:400}
 .card a:hover{color:var(--blue);text-decoration:underline}
 .card p{margin:6px 0 0;color:#2B3A47}
 .empty{color:var(--mut);padding:30px 0;text-align:center}
+.viewsw{display:flex;gap:6px;padding:10px 0 0}
+.viewsw .chip{font-weight:600}
+.cfg{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+.cfg h3{margin:0 0 8px;font-size:15px}
+.cfg p.lead{margin:0;color:#2B3A47}
+.steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.steps div{flex:1;min-width:170px;background:var(--blue-50);border-radius:8px;padding:8px 10px;font-size:13px}
+.steps b{color:var(--blue);display:block}
+table.cmp,table.src{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+table.cmp th,table.cmp td,table.src th,table.src td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+table.cmp th{background:var(--blue-50);color:var(--blue)}
+table.cmp td:first-child{color:var(--mut);width:180px}
+table.src th{background:#F1F5F9;color:var(--mut);font-weight:600}
+table.src td.q{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#2B3A47;word-break:break-all}
+.ok{color:#2E7D32;font-weight:600}.ko{color:#B3261E;font-weight:600}
+.secs{display:flex;flex-wrap:wrap;gap:4px}
+details summary{cursor:pointer;color:var(--blue)}
+details div{margin-top:6px;color:#2B3A47;white-space:pre-wrap}
 footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap top">
-    <div class="brand"><small>OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b>Revue de presse triée par une IA open source</b></div>
+    <div class="brand"><small>OCHA · VEILLE MÉDIAS · DÉMO LIVE</small><b>Revue de presse triée par IA</b></div>
     <div class="live"><span class="dot"></span><span id="updated">Chargement…</span></div>
   </div>
 </header>
@@ -50,13 +69,15 @@ footer{color:var(--mut);font-size:12px;text-align:center;padding:30px 16px 40px}
 </div>
 <main class="wrap">
   <div class="controls" id="countries"></div>
-  <div class="controls">
+  <div class="viewsw" id="viewsw"><button class="chip on" data-v="news">Revue de presse</button><button class="chip" data-v="cfg">⚙ Configuration</button></div>
+  <div class="controls" id="newsctl">
     <button class="chip on" data-days="7">7 derniers jours</button>
     <button class="chip" data-days="14">14 jours</button>
     <span class="sep"></span>
     <input type="search" id="q" placeholder="Rechercher (titre, média, résumé)…">
   </div>
   <div class="controls" id="sections"></div>
+  <div id="cfgout" hidden></div>
   <div id="out"><div class="empty">Chargement des articles…</div></div>
 </main>
 <footer>
@@ -70,7 +91,8 @@ const H = { apikey: ANON, Authorization: 'Bearer ' + ANON };
 const api = p => fetch(SB + '/rest/v1/' + p, { headers: H }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = d => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-const st = { country: null, days: 7, section: null, q: '' };
+const st = { country: null, days: 7, section: null, q: '', view: 'news' };
+let COUNTRIES = [], CFG = null;
 let ARTS = [], SECTIONS = [], ALLSECTIONS = [];
 const MODEL_NAMES = { 'qwen/qwen3.8-27b': 'Qwen3.8 27B (open source, Alibaba)', 'anthropic/claude-haiku-5.5': 'Claude Haiku 5.5 (Anthropic)' };
 const modelName = m => { if (!m) return 'modèle IA'; const k = Object.keys(MODEL_NAMES).find(k => m.startsWith(k)); return k ? MODEL_NAMES[k] : m; };
@@ -82,11 +104,13 @@ async function init() {
       api('media_public_sections?select=country_code,code,label,ordre&order=ordre')]);
     ALLSECTIONS = sections;
     if (!countries.length) { out('Aucun pays disponible pour le moment.'); return; }
-    st.country = countries[0].code;
+    COUNTRIES = countries; st.country = countries[0].code;
     const c = document.getElementById('countries');
     c.innerHTML = countries.map(x => `<button class="chip${x.code === st.country ? ' on' : ''}" data-c="${esc(x.code)}">${esc(x.name_fr)}</button>`).join('');
     c.onclick = e => { const b = e.target.closest('[data-c]'); if (!b) return; st.country = b.dataset.c; st.section = null; mark(c, b); load(); };
     document.querySelectorAll('[data-days]').forEach(b => b.onclick = () => { st.days = +b.dataset.days; mark(b.parentElement, b, '[data-days]'); render(); });
+    const vs = document.getElementById('viewsw');
+    vs.onclick = e => { const b = e.target.closest('[data-v]'); if (!b) return; st.view = b.dataset.v; mark(vs, b); applyView(); };
     document.getElementById('q').oninput = e => { st.q = e.target.value.trim().toLowerCase(); render(); };
     load();
   } catch (e) { out('La démonstration n’a pas pu se charger (' + esc(e.message) + ').'); }
@@ -94,7 +118,64 @@ async function init() {
 function mark(parent, btn, sel = '.chip') { parent.querySelectorAll(sel).forEach(x => x.classList.toggle('on', x === btn)); }
 function out(msg) { document.getElementById('out').innerHTML = `<div class="empty">${msg}</div>`; }
 
+function applyView() {
+  const cfg = st.view === 'cfg';
+  ['newsctl', 'sections', 'out'].forEach(id => document.getElementById(id).hidden = cfg);
+  document.getElementById('cfgout').hidden = !cfg;
+  if (cfg) renderCfg();
+}
+
+const LANG = { fr: 'Français', en: 'Anglais' };
+const KIND = { rss: 'Flux RSS', google_news: 'Recherche Google Actualités' };
+const fdt = d => d ? new Date(d).toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+const nf = n => Number(n || 0).toLocaleString('fr-FR');
+
+async function renderCfg() {
+  const box = document.getElementById('cfgout');
+  box.innerHTML = '<div class="empty">Chargement de la configuration…</div>';
+  try {
+    if (!CFG) CFG = await api('media_public_config?select=*');
+    const src = await api(`media_public_sources?select=*&country_code=eq.${encodeURIComponent(st.country)}&order=kind,name`);
+    const order = COUNTRIES.map(c => c.code);
+    const cs = [...CFG].sort((a, b) => order.indexOf(a.code) - order.indexOf(b.code));
+    const secs = code => ALLSECTIONS.filter(x => x.country_code === code).map(x => `<span class="tag" title="${esc(x.label)}">${esc(x.code)}</span>`).join(' ');
+    const secNames = code => ALLSECTIONS.filter(x => x.country_code === code).map(x => esc(x.label)).join(' · ');
+    const row = (label, f) => `<tr><td>${label}</td>${cs.map(c => `<td>${f(c)}</td>`).join('')}</tr>`;
+    const cur = cs.find(c => c.code === st.country) || cs[0];
+    box.innerHTML = `
+    <div class="cfg">
+      <h3>Une application, une fiche de configuration par pays</h3>
+      <p class="lead">Chaque pays (ou bureau) est une simple fiche : ses sources, ses rubriques, sa langue, son périmètre et son moteur d'IA. Le code, la base de données et la chaîne de traitement sont communs. Ajouter un pays ne demande aucun nouveau développement.</p>
+      <div class="steps">
+        <div><b>1 · Sources</b>Liste de sites (flux RSS) et de recherches Google Actualités.</div>
+        <div><b>2 · Rubriques & langue</b>Les sections de la revue de presse et la langue des résumés.</div>
+        <div><b>3 · Périmètre</b>Quelques phrases : ce qui est pertinent ou non pour l'équipe.</div>
+        <div><b>4 · Apprentissage</b>Les revues de presse déjà publiées par l'équipe servent d'exemples au moteur.</div>
+      </div>
+    </div>
+    <h2>Les pays branchés aujourd'hui</h2>
+    <table class="cmp"><thead><tr><th></th>${cs.map(c => `<th>${esc(c.name_fr)}</th>`).join('')}</tr></thead><tbody>
+      ${row('Moteur d\'IA', c => esc(modelName(c.engine)))}
+      ${row('Langue des résumés', c => LANG[c.summary_lang] || esc(c.summary_lang))}
+      ${row('Rubriques', c => `<div class="secs">${secs(c.code)}</div><div style="color:var(--mut);font-size:12px;margin-top:4px">${secNames(c.code)}</div>`)}
+      ${row('Sources suivies', c => nf(c.n_sources))}
+      ${row('Exemples de l\'équipe', c => c.n_reference ? `${nf(c.n_reference)} articles retenus dans ${nf(c.n_reference_digests)} revues publiées` : '—')}
+      ${row('Articles triés à ce jour', c => nf(c.n_sorted))}
+      ${row('Fréquence', c => '3 fois par jour · ' + esc(c.schedule))}
+      ${row('Périmètre', c => `<details><summary>Voir les règles</summary><div>${esc(c.scope_rules || '')}</div></details>`)}
+    </tbody></table>
+    <h2>Sources — ${esc(cur ? cur.name_fr : '')} <span class="n">· ${src.length}</span></h2>
+    <table class="src"><thead><tr><th>Source</th><th>Type · langue</th><th>Adresse / mots-clés</th><th>Dernière lecture</th></tr></thead><tbody>
+      ${src.map(x => `<tr><td><b>${esc(x.name)}</b></td><td>${KIND[x.kind] || esc(x.kind)}<br><span style="color:var(--mut)">${LANG[x.lang] || esc(x.lang || '')}</span></td>
+        <td class="q">${esc(x.target || '')}</td>
+        <td>${x.status === 'ok' ? '<span class="ok">✓ lue</span>' : x.status === 'error' ? '<span class="ko">erreur</span>' : '<span style="color:var(--mut)">pas encore lue</span>'}<br><span style="color:var(--mut);font-size:12px">${fdt(x.last_fetch_at)}</span></td></tr>`).join('')}
+    </tbody></table>
+    <p style="color:var(--mut);font-size:12px">Vue en lecture seule. Dans l'application de l'équipe, les sources s'ajoutent ou se désactivent en un clic.</p>`;
+  } catch (e) { box.innerHTML = `<div class="empty">Configuration indisponible (${esc(e.message)}).</div>`; }
+}
+
 async function load() {
+  if (st.view === 'cfg') renderCfg();
   out('Chargement des articles…');
   try {
     SECTIONS = ALLSECTIONS.filter(x => x.country_code === st.country);
